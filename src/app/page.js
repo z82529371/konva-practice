@@ -44,7 +44,7 @@ export default function Home() {
     );
   };
 
-  // 將圖片移到水平方向不重疊的位置
+  // 將圖片移到水平方向不重疊的位置，並保持貼合
   const moveToHorizontalSide = (node, otherNode) => {
     const box1 = node.getClientRect();
     const box2 = otherNode.getClientRect();
@@ -52,10 +52,10 @@ export default function Home() {
     // 計算水平移動的新位置
     const newX = box1.x < box2.x ? box2.x - box1.width : box2.x + box2.width;
 
-    // 垂直方向保持不變
+    // 垂直位置對齊另一個圖片的垂直中心
     node.position({
-      x: Math.max(0, Math.min(newX, 1600 - box1.width)),
-      y: otherNode.y(),
+      x: Math.max(0, Math.min(newX, 1600 - box1.width)), // 確保在畫布範圍內
+      y: box2.y, // 完美對齊垂直位置
     });
   };
 
@@ -84,7 +84,7 @@ export default function Home() {
   };
 
   return (
-    <Stage width={1600} height={1600} className="bg-gray-200" draggable>
+    <Stage width={1600} height={1600} className="bg-gray-200">
       <Layer>
         {/* 第一張圖片 */}
         {image1 && (
