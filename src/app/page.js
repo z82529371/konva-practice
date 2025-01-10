@@ -103,6 +103,28 @@ export default function Home() {
     }
   };
 
+  // 檢查圖片邊界，防止拖出畫布
+  const limitDragPosition = (pos, node) => {
+    const box = node.getClientRect();
+    const newX = Math.max(0, Math.min(pos.x, stageSize.width - box.width));
+    const newY = Math.max(0, Math.min(pos.y, stageSize.height - box.height));
+    return { x: newX, y: newY };
+  };
+
+  // 第一張圖片的拖曳事件
+  const handleDragMoveImage1 = (e) => {
+    const node = e.target;
+    const newPos = limitDragPosition(node.position(), node);
+    node.position(newPos); // 限制圖片位置
+  };
+
+  // 第二張圖片的拖曳事件
+  const handleDragMoveImage2 = (e) => {
+    const node = e.target;
+    const newPos = limitDragPosition(node.position(), node);
+    node.position(newPos); // 限制圖片位置
+  };
+
   console.log(stageSize);
   return (
     <Stage
@@ -120,10 +142,11 @@ export default function Home() {
             width={100}
             height={100}
             draggable
-            fill={"blue"}
+            // fill={"blue"}
             ref={image1Ref}
             onDragEnd={handleDragEndImage1}
             onDragStart={handleDragStartImage1}
+            onDragMove={handleDragMoveImage1} // 拖動時限制範圍
           />
         )}
 
@@ -136,10 +159,11 @@ export default function Home() {
             width={100}
             height={100}
             draggable
-            fill={"red"}
+            // fill={"red"}
             ref={image2Ref}
             onDragStart={handleDragStartImage2}
             onDragEnd={handleDragEndImage2}
+            onDragMove={handleDragMoveImage2} // 拖動時限制範圍
           />
         )}
       </Layer>
