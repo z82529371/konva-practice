@@ -59,6 +59,16 @@ export default function Home() {
     });
   };
 
+  // 第一張圖片的拖曳開始事件
+  const handleDragStartImage1 = (e) => {
+    e.target.moveToTop(); // 將圖片移到最上層
+  };
+
+  // 第二張圖片的拖曳開始事件
+  const handleDragStartImage2 = (e) => {
+    e.target.moveToTop(); // 將圖片移到最上層
+  };
+
   // 第一張圖片的拖曳結束事件
   const handleDragEndImage1 = (e) => {
     if (checkCollision(e.target, image2Ref.current)) {
@@ -88,6 +98,7 @@ export default function Home() {
             fill={"blue"}
             ref={image1Ref}
             onDragEnd={handleDragEndImage1}
+            onDragStart={handleDragStartImage1}
           />
         )}
 
@@ -102,6 +113,7 @@ export default function Home() {
             draggable
             fill={"red"}
             ref={image2Ref}
+            onDragStart={handleDragStartImage2}
             onDragEnd={handleDragEndImage2}
           />
         )}
