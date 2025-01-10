@@ -5,17 +5,19 @@ import { Stage, Layer, Image as KonvaImage, Text, Group } from "react-konva";
 import { Button, Box } from "@mui/material";
 
 export default function Home() {
-  const [stageSize, setStageSize] = useState({
-    width: window.innerWidth,
-    height: window.innerHeight,
-  });
+  const [stageSize, setStageSize] = useState({ width: 0, height: 0 }); // 初始化為空
 
   const [images1, setImages1] = useState([]); // 儲存 Image1 的陣列
   const [images2, setImages2] = useState([]); // 儲存 Image2 的陣列
   const allRefs = useRef([]); // 統一管理所有圖片的引用
 
-  // 更新畫布大小
+  // 在瀏覽器端初始化畫布大小
   useEffect(() => {
+    setStageSize({
+      width: window.innerWidth,
+      height: window.innerHeight,
+    });
+
     const handleResize = () => {
       setStageSize({
         width: window.innerWidth,
@@ -23,7 +25,7 @@ export default function Home() {
       });
     };
 
-    window.addEventListener("resize", handleResize); // 監聽螢幕大小變化
+    window.addEventListener("resize", handleResize); // 監聽視窗大小變化
     return () => {
       window.removeEventListener("resize", handleResize); // 清除監聽
     };
