@@ -1,18 +1,18 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { Stage, Layer, Image as KonvaImage } from "react-konva";
+import { Stage, Layer, Image as KonvaImage, Text } from "react-konva";
+import { Button, Box } from "@mui/material";
 
 export default function Home() {
-  const [image1, setImage1] = useState(null); // 保存第一張圖片
-  const [image2, setImage2] = useState(null); // 保存第二張圖片
-  const image1Ref = useRef(null);
-  const image2Ref = useRef(null);
-
   const [stageSize, setStageSize] = useState({
     width: window.innerWidth,
     height: window.innerHeight,
   });
+
+  const [images1, setImages1] = useState([]); // 儲存 Image1 的陣列
+  const [images2, setImages2] = useState([]); // 儲存 Image2 的陣列
+  const allRefs = useRef([]); // 統一管理所有圖片的引用
 
   // 更新畫布大小
   useEffect(() => {
@@ -29,23 +29,44 @@ export default function Home() {
     };
   }, []);
 
-  // 加載第一張圖片
-  useEffect(() => {
-    const img1 = new window.Image();
-    img1.src = "/dd.svg"; // 第一張圖片的路徑
-    img1.onload = () => {
-      setImage1(img1); // 圖片加載完成後設置
-    };
-  }, []);
+  // 加載圖片的方法
+  const loadImage = (src) => {
+    const img = new window.Image();
+    img.src = src;
+    return new Promise((resolve) => {
+      img.onload = () => resolve(img);
+    });
+  };
 
-  // 加載第二張圖片
-  useEffect(() => {
-    const img2 = new window.Image();
-    img2.src = "/netWorker.svg"; // 第二張圖片的路徑
-    img2.onload = () => {
-      setImage2(img2); // 圖片加載完成後設置
-    };
-  }, []);
+  // 新增 image1
+  const addImage1 = async () => {
+    const img = await loadImage("/dd.svg");
+    setImages1((prev) => [
+      ...prev,
+      {
+        id: `image1-${prev.length}`,
+        image: img,
+        x: 100 + prev.length * 100,
+        y: 100,
+        label: `Image 1 - ${prev.length}`, // 添加標籤
+      },
+    ]);
+  };
+
+  // 新增 image2
+  const addImage2 = async () => {
+    const img = await loadImage("/netWorker.svg");
+    setImages2((prev) => [
+      ...prev,
+      {
+        id: `image2-${prev.length}`,
+        image: img,
+        x: 100 + prev.length * 100,
+        y: 200,
+        label: `Image 2 - ${prev.length}`, // 添加標籤
+      },
+    ]);
+  };
 
   // 檢查兩張圖片是否重疊
   const checkCollision = (node1, node2) => {
@@ -79,28 +100,14 @@ export default function Home() {
     });
   };
 
-  // 第一張圖片的拖曳開始事件
-  const handleDragStartImage1 = (e) => {
-    e.target.moveToTop(); // 將圖片移到最上層
-  };
-
-  // 第二張圖片的拖曳開始事件
-  const handleDragStartImage2 = (e) => {
-    e.target.moveToTop(); // 將圖片移到最上層
-  };
-
-  // 第一張圖片的拖曳結束事件
-  const handleDragEndImage1 = (e) => {
-    if (checkCollision(e.target, image2Ref.current)) {
-      moveToHorizontalSide(e.target, image2Ref.current); // 移到水平方向
-    }
-  };
-
-  // 第二張圖片的拖曳結束事件
-  const handleDragEndImage2 = (e) => {
-    if (checkCollision(e.target, image1Ref.current)) {
-      moveToHorizontalSide(e.target, image1Ref.current); // 移到水平方向
-    }
+  // 單一拖曳結束事件
+  const handleDragEnd = (e) => {
+    const node = e.target;
+    allRefs.current.forEach((ref) => {
+      if (ref && ref !== node && checkCollision(node, ref)) {
+        moveToHorizontalSide(node, ref); // 發生碰撞時移動圖片
+      }
+    });
   };
 
   // 檢查圖片邊界，防止拖出畫布
@@ -111,62 +118,101 @@ export default function Home() {
     return { x: newX, y: newY };
   };
 
-  // 第一張圖片的拖曳事件
-  const handleDragMoveImage1 = (e) => {
+  // 拖曳移動事件
+  const handleDragMove = (e) => {
     const node = e.target;
     const newPos = limitDragPosition(node.position(), node);
     node.position(newPos); // 限制圖片位置
   };
 
-  // 第二張圖片的拖曳事件
-  const handleDragMoveImage2 = (e) => {
-    const node = e.target;
-    const newPos = limitDragPosition(node.position(), node);
-    node.position(newPos); // 限制圖片位置
+  // 更改指針樣式為手指
+  const handleMouseEnter = (e) => {
+    const container = e.target.getStage().container();
+    container.style.cursor = "pointer";
   };
 
-  console.log(stageSize);
+  // 恢復指針樣式為默認
+  const handleMouseLeave = (e) => {
+    const container = e.target.getStage().container();
+    container.style.cursor = "default";
+  };
+
+  // 圖片的拖曳開始事件
+  const handleDragStartImage = (e) => {
+    e.target.moveToTop(); // 將圖片移到最上層
+  };
+
   return (
-    <Stage
-      width={stageSize.width}
-      height={stageSize.height}
-      className="bg-gray-200"
-    >
-      <Layer>
-        {/* 第一張圖片 */}
-        {image1 && (
-          <KonvaImage
-            image={image1}
-            x={350}
-            y={350}
-            width={100}
-            height={100}
-            draggable
-            // fill={"blue"}
-            ref={image1Ref}
-            onDragEnd={handleDragEndImage1}
-            onDragStart={handleDragStartImage1}
-            onDragMove={handleDragMoveImage1} // 拖動時限制範圍
-          />
-        )}
+    <>
+      <Box>
+        <Button variant="contained" color="primary" onClick={addImage1}>
+          Add Image 1
+        </Button>
+        <Button variant="contained" color="secondary" onClick={addImage2}>
+          Add Image 2
+        </Button>
 
-        {/* 第二張圖片 */}
-        {image2 && (
-          <KonvaImage
-            image={image2}
-            x={500}
-            y={500}
-            width={100}
-            height={100}
-            draggable
-            // fill={"red"}
-            ref={image2Ref}
-            onDragStart={handleDragStartImage2}
-            onDragEnd={handleDragEndImage2}
-            onDragMove={handleDragMoveImage2} // 拖動時限制範圍
-          />
-        )}
-      </Layer>
-    </Stage>
+        <Stage
+          width={stageSize.width}
+          height={stageSize.height}
+          className="bg-gray-200"
+        >
+          <Layer>
+            {/* 動態渲染 Image1 */}
+            {images1.map((img, index) => (
+              <React.Fragment key={img.id}>
+                <KonvaImage
+                  image={img.image}
+                  x={img.x}
+                  y={img.y}
+                  width={100}
+                  height={100}
+                  draggable
+                  ref={(node) => allRefs.current.push(node)}
+                  onDragMove={handleDragMove}
+                  onDragEnd={handleDragEnd}
+                  onMouseEnter={handleMouseEnter}
+                  onMouseLeave={handleMouseLeave}
+                  onDragStart={handleDragStartImage}
+                />
+                <Text
+                  text={img.label}
+                  x={img.x}
+                  y={img.y + 110} // 位置在圖片下方
+                  fontSize={14}
+                  fill="black"
+                />
+              </React.Fragment>
+            ))}
+            {/* 動態渲染 Image2 */}
+            {images2.map((img, index) => (
+              <React.Fragment key={img.id}>
+                <KonvaImage
+                  image={img.image}
+                  x={img.x}
+                  y={img.y}
+                  width={100}
+                  height={100}
+                  draggable
+                  ref={(node) => allRefs.current.push(node)}
+                  onDragMove={handleDragMove}
+                  onDragEnd={handleDragEnd}
+                  onMouseEnter={handleMouseEnter}
+                  onMouseLeave={handleMouseLeave}
+                  onDragStart={handleDragStartImage}
+                />
+                <Text
+                  text={img.label}
+                  x={img.x}
+                  y={img.y + 110} // 位置在圖片下方
+                  fontSize={14}
+                  fill="black"
+                />
+              </React.Fragment>
+            ))}
+          </Layer>
+        </Stage>
+      </Box>
+    </>
   );
 }
