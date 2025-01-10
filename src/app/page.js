@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { Stage, Layer, Image as KonvaImage, Text } from "react-konva";
+import { Stage, Layer, Image as KonvaImage, Text, Group } from "react-konva";
 import { Button, Box } from "@mui/material";
 
 export default function Home() {
@@ -62,7 +62,7 @@ export default function Home() {
         id: `image2-${prev.length}`,
         image: img,
         x: 100 + prev.length * 100,
-        y: 200,
+        y: 300,
         label: `Image 2 - ${prev.length}`, // 添加標籤
       },
     ]);
@@ -160,55 +160,51 @@ export default function Home() {
           <Layer>
             {/* 動態渲染 Image1 */}
             {images1.map((img, index) => (
-              <React.Fragment key={img.id}>
-                <KonvaImage
-                  image={img.image}
-                  x={img.x}
-                  y={img.y}
-                  width={100}
-                  height={100}
-                  draggable
-                  ref={(node) => allRefs.current.push(node)}
-                  onDragMove={handleDragMove}
-                  onDragEnd={handleDragEnd}
-                  onMouseEnter={handleMouseEnter}
-                  onMouseLeave={handleMouseLeave}
-                  onDragStart={handleDragStartImage}
-                />
+              <Group
+                key={img.id}
+                draggable
+                x={img.x}
+                y={img.y}
+                ref={(node) => allRefs.current.push(node)}
+                onDragMove={handleDragMove}
+                onDragEnd={handleDragEnd}
+                onMouseEnter={handleMouseEnter}
+                onMouseLeave={handleMouseLeave}
+                onDragStart={handleDragStartImage}
+              >
+                <KonvaImage image={img.image} width={100} height={100} />
                 <Text
                   text={img.label}
-                  x={img.x}
-                  y={img.y + 110} // 位置在圖片下方
+                  x={15} //與圖片對齊
+                  y={110} // 位置在圖片下方
                   fontSize={14}
                   fill="black"
                 />
-              </React.Fragment>
+              </Group>
             ))}
             {/* 動態渲染 Image2 */}
             {images2.map((img, index) => (
-              <React.Fragment key={img.id}>
-                <KonvaImage
-                  image={img.image}
-                  x={img.x}
-                  y={img.y}
-                  width={100}
-                  height={100}
-                  draggable
-                  ref={(node) => allRefs.current.push(node)}
-                  onDragMove={handleDragMove}
-                  onDragEnd={handleDragEnd}
-                  onMouseEnter={handleMouseEnter}
-                  onMouseLeave={handleMouseLeave}
-                  onDragStart={handleDragStartImage}
-                />
+              <Group
+                key={img.id}
+                draggable
+                x={img.x}
+                y={img.y}
+                onDragMove={handleDragMove}
+                onDragEnd={handleDragEnd}
+                onMouseEnter={handleMouseEnter}
+                onMouseLeave={handleMouseLeave}
+                onDragStart={handleDragStartImage}
+                ref={(node) => allRefs.current.push(node)}
+              >
+                <KonvaImage image={img.image} width={100} height={100} />
                 <Text
                   text={img.label}
-                  x={img.x}
-                  y={img.y + 110} // 位置在圖片下方
+                  x={15} // 與圖片對齊
+                  y={110} // 在圖片下方
                   fontSize={14}
                   fill="black"
                 />
-              </React.Fragment>
+              </Group>
             ))}
           </Layer>
         </Stage>
