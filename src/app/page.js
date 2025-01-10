@@ -9,6 +9,26 @@ export default function Home() {
   const image1Ref = useRef(null);
   const image2Ref = useRef(null);
 
+  const [stageSize, setStageSize] = useState({
+    width: window.innerWidth,
+    height: window.innerHeight,
+  });
+
+  // 更新畫布大小
+  useEffect(() => {
+    const handleResize = () => {
+      setStageSize({
+        width: window.innerWidth,
+        height: window.innerHeight,
+      });
+    };
+
+    window.addEventListener("resize", handleResize); // 監聽螢幕大小變化
+    return () => {
+      window.removeEventListener("resize", handleResize); // 清除監聽
+    };
+  }, []);
+
   // 加載第一張圖片
   useEffect(() => {
     const img1 = new window.Image();
@@ -83,8 +103,13 @@ export default function Home() {
     }
   };
 
+  console.log(stageSize);
   return (
-    <Stage width={1600} height={1600} className="bg-gray-200">
+    <Stage
+      width={stageSize.width}
+      height={stageSize.height}
+      className="bg-gray-200"
+    >
       <Layer>
         {/* 第一張圖片 */}
         {image1 && (
