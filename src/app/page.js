@@ -18,6 +18,24 @@ export default function Home() {
     };
   }, []);
 
+  // 檢查兩張圖片是否重疊
+  const checkCollision = (node1, node2) => {
+    if (!node1 || !node2) return false;
+
+    // 取得邊界矩形
+    const box1 = node1.getClientRect();
+    const box2 = node2.getClientRect();
+
+    return !(
+      (
+        box1.x > box2.x + box2.width || // box1 在 box2 的右側
+        box1.x + box1.width < box2.x || // box1 在 box2 的左側
+        box1.y > box2.y + box2.height || // box1 在 box2 的下方
+        box1.y + box1.height < box2.y
+      ) // box1 在 box2 的上方
+    );
+  };
+
   // 加載第二張圖片
   useEffect(() => {
     const img2 = new window.Image();
