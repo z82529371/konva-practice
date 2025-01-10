@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { Stage, Layer, Rect, Circle, Image as KonvaImage } from "react-konva";
+import { Stage, Layer, Image as KonvaImage } from "react-konva";
 
 export default function Home() {
   const [image1, setImage1] = useState(null); // 保存第一張圖片
@@ -18,11 +18,19 @@ export default function Home() {
     };
   }, []);
 
+  // 加載第二張圖片
+  useEffect(() => {
+    const img2 = new window.Image();
+    img2.src = "/netWorker.svg"; // 第二張圖片的路徑
+    img2.onload = () => {
+      setImage2(img2); // 圖片加載完成後設置
+    };
+  }, []);
+
   // 檢查兩張圖片是否重疊
   const checkCollision = (node1, node2) => {
     if (!node1 || !node2) return false;
 
-    // 取得邊界矩形
     const box1 = node1.getClientRect();
     const box2 = node2.getClientRect();
 
@@ -36,46 +44,65 @@ export default function Home() {
     );
   };
 
-  // 加載第二張圖片
-  useEffect(() => {
-    const img2 = new window.Image();
-    img2.src = "/netWorker.svg"; // 第二張圖片的路徑
-    img2.onload = () => {
-      setImage2(img2); // 圖片加載完成後設置
-    };
-  }, []);
+  // 將圖片移到水平方向不重疊的位置
+  const moveToHorizontalSide = (node, otherNode) => {
+    const box1 = node.getClientRect();
+    const box2 = otherNode.getClientRect();
+
+    // 計算水平移動的新位置
+    const newX = box1.x < box2.x ? box2.x - box1.width : box2.x + box2.width;
+
+    // 垂直方向保持不變
+    node.position({
+      x: Math.max(0, Math.min(newX, 1600 - box1.width)),
+      y: otherNode.y(),
+    });
+  };
+
+  // 第一張圖片的拖曳結束事件
+  const handleDragEndImage1 = (e) => {
+    if (checkCollision(e.target, image2Ref.current)) {
+      moveToHorizontalSide(e.target, image2Ref.current); // 移到水平方向
+    }
+  };
+
+  // 第二張圖片的拖曳結束事件
+  const handleDragEndImage2 = (e) => {
+    if (checkCollision(e.target, image1Ref.current)) {
+      moveToHorizontalSide(e.target, image1Ref.current); // 移到水平方向
+    }
+  };
 
   return (
     <Stage width={1600} height={1600} className="bg-gray-200" draggable>
       <Layer>
-        <Rect x={50} y={50} width={100} height={100} fill="blue" draggable />
-        <Circle x={200} y={200} radius={50} fill="red" draggable />
-
         {/* 第一張圖片 */}
         {image1 && (
           <KonvaImage
-            image={image1} // 傳遞 HTMLImageElement
+            image={image1}
             x={350}
             y={350}
             width={100}
             height={100}
             draggable
-            ref={image1Ref} // 可選：用於操作圖片
-            onDragMove={handelDragMove}
+            fill={"blue"}
+            ref={image1Ref}
+            onDragEnd={handleDragEndImage1}
           />
         )}
 
         {/* 第二張圖片 */}
         {image2 && (
           <KonvaImage
-            image={image2} // 傳遞 HTMLImageElement
+            image={image2}
             x={500}
             y={500}
             width={100}
             height={100}
             draggable
-            ref={image2Ref} // 可選：用於操作圖片
-            onDragMove={handelDragMove}
+            fill={"red"}
+            ref={image2Ref}
+            onDragEnd={handleDragEndImage2}
           />
         )}
       </Layer>
