@@ -85,6 +85,11 @@ const App = () => {
       prev.map((item) => (item.id === img.id ? { ...item, x, y } : item))
     );
 
+    // 如果拖動的是選中的圖片，更新選中圖片的座標
+    if (selectedImage && selectedImage.id === img.id) {
+      setSelectedImage({ ...selectedImage, x, y });
+    }
+
     // 更新與該圖片相關的線條的起點或終點座標
     setLines((prev) =>
       prev.map((line) => {
