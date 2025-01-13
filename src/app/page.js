@@ -1,6 +1,6 @@
 "use client";
 import React, { useRef, useState } from "react";
-import { Stage, Layer, Image, Line } from "react-konva";
+import { Stage, Layer, Group, Image, Line, Text } from "react-konva";
 import Button from "@mui/material/Button"; // 引入 MUI 的 Button
 import useImage from "use-image";
 import chroma from "chroma-js";
@@ -14,56 +14,69 @@ const DraggableImageButton = ({
   onClick,
   onDblClick,
   isSelected,
+  name,
 }) => {
   const [image] = useImage(src); // 使用 useImage 加載圖片
   const [hover, setHover] = useState(false);
 
   return (
-    <Image
+    <Group
       x={x}
       y={y}
-      image={image}
       draggable
       onDragMove={(e) => {
-        // 獲取畫布大小
+        // 畫布尺寸
         const stage = e.target.getStage();
         const stageWidth = stage.width();
         const stageHeight = stage.height();
 
-        // 計算圖片寬高
-        const imageWidth = e.target.width();
-        const imageHeight = e.target.height();
+        // 群組大小 (動態計算)
+        const groupWidth = 100; // 圖片寬度
+        const groupHeight = 100 + 30; // 圖片高度 + 文字高度 (假設文字高度為 20)
 
-        // 獲取拖曳座標
+        // 獲取新的位置
         const newX = e.target.x();
         const newY = e.target.y();
 
-        // 限制座標在畫布內
+        // 限制移動範圍
         const constrainedX = Math.max(
           0,
-          Math.min(newX, stageWidth - imageWidth)
+          Math.min(newX, stageWidth - groupWidth)
         );
         const constrainedY = Math.max(
           0,
-          Math.min(newY, stageHeight - imageHeight)
+          Math.min(newY, stageHeight - groupHeight)
         );
 
-        // 更新圖片位置
+        // 更新群組位置
         e.target.x(constrainedX);
         e.target.y(constrainedY);
 
         // 調用父層傳入的拖曳事件
         onDragMove({ x: constrainedX, y: constrainedY });
       }}
-      onClick={onClick} // 點擊時觸發
-      onDblClick={onDblClick} // 雙擊時觸發
-      width={100}
-      height={100}
-      stroke={hover || isSelected ? "blue" : "gray"} // 選中圖片時顯示紅色邊框
-      strokeWidth={isSelected ? 4 : 2}
-      onMouseEnter={() => setHover(true)} // 滑鼠進入時顯示紅色邊框
-      onMouseLeave={() => setHover(false)} // 滑鼠離開時恢復
-    />
+      onClick={onClick} // 點擊整個群組時觸發
+      onDblClick={onDblClick} // 雙擊整個群組時觸發
+    >
+      {/* 圖片 */}
+      <Image
+        image={image}
+        width={100}
+        height={100}
+        onMouseEnter={() => setHover(true)} // 滑鼠進入時顯示藍色邊框
+        onMouseLeave={() => setHover(false)} // 滑鼠離開時恢復
+      />
+      {/* 標籤 */}
+      <Text
+        x={0} // 與圖片水平對齊
+        y={110} // 位於圖片下方
+        text={name} // 顯示圖片的名稱
+        fontSize={14}
+        fill="black"
+        align="center"
+        width={100} // 與圖片寬度一致
+      />
+    </Group>
   );
 };
 
@@ -76,9 +89,15 @@ const App = () => {
 
   // 新增圖片
   const addImage = (src, x, y, type) => {
+    // 計算該類型當前的編號
+    const typeCount =
+      images.filter((img) => img.type.startsWith(type)).length + 1;
+
+    const name = `${type === "dd" ? "DD" : "NetWorker"} - ${typeCount}`; // 例如：dd-1, dd-2
+
     setImages((prev) => [
       ...prev,
-      { id: Date.now(), src, x, y, type }, // 每張圖片有唯一 ID
+      { id: Date.now(), src, x, y, type, name: name }, // 每張圖片有唯一 ID
     ]);
   };
 
@@ -273,6 +292,7 @@ const App = () => {
               x={img.x}
               y={img.y}
               src={img.src}
+              name={img.name}
               isSelected={selectedImage && selectedImage.id === img.id} // 是否被選中
               onDragMove={(pos) => {
                 setImages((prev) =>
