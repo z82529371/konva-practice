@@ -11,6 +11,7 @@ const DraggableImageButton = ({
   src,
   onDragMove,
   onClick,
+  onDblClick,
   isSelected,
 }) => {
   const [image] = useImage(src); // 使用 useImage 加載圖片
@@ -24,6 +25,7 @@ const DraggableImageButton = ({
       draggable
       onDragMove={onDragMove} // 當圖片拖曳時觸發事件
       onClick={onClick} // 點擊時觸發
+      onDblClick={onDblClick} // 雙擊時觸發
       width={100}
       height={100}
       stroke={hover || isSelected ? "red" : "blue"} // 選中圖片時顯示紅色邊框
@@ -78,6 +80,11 @@ const App = () => {
     }
   };
 
+  // 處理雙擊取消選中
+  const handleImageDblClick = () => {
+    setSelectedImage(null); // 取消選中
+  };
+
   // 處理圖片拖動事件
   const handleImageDrag = (img, x, y) => {
     // 更新圖片的座標
@@ -102,6 +109,20 @@ const App = () => {
         }
       })
     );
+  };
+
+  // 計算直角線的點
+  const calculateLinePoints = (start, end) => {
+    const startX = start.x + 50; // 起點中心
+    const startY = start.y + 50;
+    const endX = end.x + 50; // 終點中心
+    const endY = end.y + 50;
+
+    // 中間點：先水平再垂直
+    let midX = startX; // 中點 X 座標
+    let midY = endY; // 中點 Y 座標
+
+    return [startX, startY, midX, midY, endX, endY];
   };
 
   return (
@@ -130,12 +151,7 @@ const App = () => {
           {lines.map((line, index) => (
             <Line
               key={index}
-              points={[
-                line.start.x + 50, // 起點中心
-                line.start.y + 50,
-                line.end.x + 50, // 終點中心
-                line.end.y + 50,
-              ]}
+              points={calculateLinePoints(line.start, line.end)} // 傳入已計算的中間點
               stroke="black"
               strokeWidth={2}
             />
@@ -155,6 +171,7 @@ const App = () => {
                 handleImageDrag(img, e.target.x(), e.target.y())
               } // 更新拖動位置
               onClick={() => handleImageClick(img)} // 點擊圖片時觸發
+              onDblClick={handleImageDblClick} // 雙擊取消選中
             />
           ))}
         </Layer>
