@@ -39,6 +39,8 @@ const App = () => {
   const [lines, setLines] = useState([]); // 儲存所有線條的資訊
   const [selectedImage, setSelectedImage] = useState(null); // 追蹤當前被選中的圖片
 
+  console.log(lines);
+
   // 新增圖片
   const addImage = (src, x, y) => {
     setImages((prev) => [
@@ -47,10 +49,27 @@ const App = () => {
     ]);
   };
 
+  // 檢查是否已經有連線
+  const isAlreadyConnected = (image1, image2) => {
+    return lines.some(
+      (line) =>
+        (line.start.id === image1.id && line.end.id === image2.id) || // 正向檢查
+        (line.start.id === image2.id && line.end.id === image1.id) // 反向檢查
+    );
+  };
+
   // 處理圖片點擊事件
   const handleImageClick = (image) => {
     if (selectedImage) {
-      // 如果已有選擇的圖片，新增一條線
+      // 如果已有選擇的圖片，檢查是否與當前圖片相同
+      if (selectedImage.id === image.id) {
+        // 如果是同一張圖片，則不執行新增線條邏輯
+        return;
+      } else if (isAlreadyConnected(selectedImage, image)) {
+        // 如果已經有連線，則不執行新增線條邏輯
+        return;
+      }
+      // 新增一條線
       setLines((prev) => [...prev, { start: selectedImage, end: image }]);
       setSelectedImage(null); // 重置選擇
     } else {
