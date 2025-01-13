@@ -24,12 +24,42 @@ const DraggableImageButton = ({
       y={y}
       image={image}
       draggable
-      onDragMove={onDragMove} // 當圖片拖曳時觸發事件
+      onDragMove={(e) => {
+        // 獲取畫布大小
+        const stage = e.target.getStage();
+        const stageWidth = stage.width();
+        const stageHeight = stage.height();
+
+        // 計算圖片寬高
+        const imageWidth = e.target.width();
+        const imageHeight = e.target.height();
+
+        // 獲取拖曳座標
+        const newX = e.target.x();
+        const newY = e.target.y();
+
+        // 限制座標在畫布內
+        const constrainedX = Math.max(
+          0,
+          Math.min(newX, stageWidth - imageWidth)
+        );
+        const constrainedY = Math.max(
+          0,
+          Math.min(newY, stageHeight - imageHeight)
+        );
+
+        // 更新圖片位置
+        e.target.x(constrainedX);
+        e.target.y(constrainedY);
+
+        // 調用父層傳入的拖曳事件
+        onDragMove({ x: constrainedX, y: constrainedY });
+      }}
       onClick={onClick} // 點擊時觸發
       onDblClick={onDblClick} // 雙擊時觸發
       width={100}
       height={100}
-      stroke={hover || isSelected ? "red" : "gray"} // 選中圖片時顯示紅色邊框
+      stroke={hover || isSelected ? "blue" : "gray"} // 選中圖片時顯示紅色邊框
       strokeWidth={isSelected ? 4 : 2}
       onMouseEnter={() => setHover(true)} // 滑鼠進入時顯示紅色邊框
       onMouseLeave={() => setHover(false)} // 滑鼠離開時恢復
@@ -67,6 +97,9 @@ const App = () => {
   // 藍色基礎色
   const blueBase = chroma("#01579b"); // 深藍色
 
+  // 紫色基礎色
+  const purpleBase = chroma("#6a1b9a"); // 深紫色
+
   const handleImageClick = (image) => {
     if (selectedImage) {
       if (
@@ -103,6 +136,12 @@ const App = () => {
           .saturate(ddToNetWorkerCount * 0.5) // 每次增加 0.5 飽和度
           .brighten(ddToNetWorkerCount * 0.2) // 每次增加 0.2 的亮度
           .hex();
+      } else {
+        // 使用飽和度與亮度結合的方式動態調整紫色
+        color = purpleBase
+          .saturate(ddLinesCount * 0.5) // 每次增加 0.5 飽和度
+          .brighten(ddLinesCount * 0.2) // 每次增加 0.2 的亮度
+          .hex();
       }
 
       setLines((prev) => [
@@ -121,24 +160,47 @@ const App = () => {
   };
 
   // 處理圖片拖動事件
+  // 處理圖片拖動事件
   const handleImageDrag = (img, x, y) => {
+    // 獲取畫布的寬高
+    const stageWidth = window.innerWidth;
+    const stageHeight = window.innerHeight;
+
+    // 圖片的寬高 (這裡設定為 100，可根據實際情況調整)
+    const imageWidth = 100;
+    const imageHeight = 100;
+
+    // 限制圖片的邊界，保證不超出畫布
+    const constrainedX = Math.max(0, Math.min(x, stageWidth - imageWidth)); // X 軸邊界限制
+    const constrainedY = Math.max(0, Math.min(y, stageHeight - imageHeight)); // Y 軸邊界限制
+
     // 更新圖片的座標
     setImages((prev) =>
-      prev.map((item) => (item.id === img.id ? { ...item, x, y } : item))
+      prev.map((item) =>
+        item.id === img.id
+          ? { ...item, x: constrainedX, y: constrainedY }
+          : item
+      )
     );
 
     // 如果拖動的是選中的圖片，更新選中圖片的座標
     if (selectedImage && selectedImage.id === img.id) {
-      setSelectedImage({ ...selectedImage, x, y });
+      setSelectedImage({ ...selectedImage, x: constrainedX, y: constrainedY });
     }
 
     // 更新與該圖片相關的線條的起點或終點座標
     setLines((prev) =>
       prev.map((line) => {
         if (line.start.id === img.id) {
-          return { ...line, start: { ...line.start, x, y } }; // 更新起點
+          return {
+            ...line,
+            start: { ...line.start, x: constrainedX, y: constrainedY },
+          }; // 更新起點
         } else if (line.end.id === img.id) {
-          return { ...line, end: { ...line.end, x, y } }; // 更新終點
+          return {
+            ...line,
+            end: { ...line.end, x: constrainedX, y: constrainedY },
+          }; // 更新終點
         } else {
           return line; // 其他線條不變
         }
@@ -198,7 +260,7 @@ const App = () => {
               points={calculateLinePoints(line.start, line.end)} // 傳入已計算的中間點
               stroke={line.color} // 線條顏色
               strokeWidth={2}
-              tension={0.01}
+              tension={0.05}
             />
           ))}
         </Layer>
@@ -212,9 +274,46 @@ const App = () => {
               y={img.y}
               src={img.src}
               isSelected={selectedImage && selectedImage.id === img.id} // 是否被選中
-              onDragMove={(e) =>
-                handleImageDrag(img, e.target.x(), e.target.y())
-              } // 更新拖動位置
+              onDragMove={(pos) => {
+                setImages((prev) =>
+                  prev.map((item) =>
+                    item.id === img.id ? { ...item, ...pos } : item
+                  )
+                );
+
+                // 如果拖動的是選中的圖片，更新選中圖片的座標
+                if (selectedImage && selectedImage.id === img.id) {
+                  setSelectedImage({
+                    ...selectedImage,
+                    ...pos,
+                  });
+                }
+
+                // 更新與該圖片相關的線條的起點或終點座標
+                setLines((prev) =>
+                  prev.map((line) => {
+                    if (line.start.id === img.id) {
+                      return {
+                        ...line,
+                        start: {
+                          ...line.start,
+                          ...pos,
+                        },
+                      };
+                    } else if (line.end.id === img.id) {
+                      return {
+                        ...line,
+                        end: {
+                          ...line.end,
+                          ...pos,
+                        },
+                      };
+                    } else {
+                      return line;
+                    }
+                  })
+                );
+              }}
               onClick={() => handleImageClick(img)} // 點擊圖片時觸發
               onDblClick={handleImageDblClick} // 雙擊取消選中
             />
