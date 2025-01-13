@@ -118,9 +118,18 @@ const App = () => {
     const endX = end.x + 50; // 終點中心
     const endY = end.y + 50;
 
-    // 中間點：先水平再垂直
-    let midX = startX; // 中點 X 座標
-    let midY = endY; // 中點 Y 座標
+    let midX, midY;
+
+    // 判斷起點和終點的相對位置，生成直角路徑
+    if (Math.abs(startX - endX) > Math.abs(startY - endY)) {
+      // 水平優先（左右連接）
+      midX = endX;
+      midY = startY;
+    } else {
+      // 垂直優先（上下連接）
+      midX = startX;
+      midY = endY;
+    }
 
     return [startX, startY, midX, midY, endX, endY];
   };
