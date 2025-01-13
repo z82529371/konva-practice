@@ -19,7 +19,8 @@
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-icons": "^5.4.0",
-    "react-konva": "^19.0.2"
+    "react-konva": "^19.0.2",
+    "use-image": "^1.1.1"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
