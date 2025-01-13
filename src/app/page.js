@@ -10,6 +10,7 @@ const DraggableImageButton = ({
   x,
   y,
   src,
+  hoverSrc, // 新增 hover 狀態的圖片
   onDragMove,
   onClick,
   onDblClick,
@@ -17,7 +18,8 @@ const DraggableImageButton = ({
   name,
 }) => {
   const [image] = useImage(src); // 使用 useImage 加載圖片
-  const [hover, setHover] = useState(false);
+  const [hoverImage] = useImage(hoverSrc); // hover 狀態圖片
+  const [hover, setHover] = useState(false); // 是否為 hover 狀態
 
   return (
     <Group
@@ -60,7 +62,7 @@ const DraggableImageButton = ({
     >
       {/* 圖片 */}
       <Image
-        image={image}
+        image={hover ? hoverImage : image} // 根據 hover 狀態切換圖片
         width={100}
         height={100}
         onMouseEnter={() => setHover(true)} // 滑鼠進入時顯示藍色邊框
@@ -88,7 +90,7 @@ const App = () => {
   console.log(lines);
 
   // 新增圖片
-  const addImage = (src, x, y, type) => {
+  const addImage = (src, hoverSrc, x, y, type) => {
     // 計算該類型當前的編號
     const typeCount =
       images.filter((img) => img.type.startsWith(type)).length + 1;
@@ -97,7 +99,7 @@ const App = () => {
 
     setImages((prev) => [
       ...prev,
-      { id: Date.now(), src, x, y, type, name: name }, // 每張圖片有唯一 ID
+      { id: Date.now(), src, hoverSrc, x, y, type, name },
     ]);
   };
 
@@ -255,7 +257,7 @@ const App = () => {
       {/* 新增圖片 1 的按鈕 */}
       <Button
         variant="contained"
-        onClick={() => addImage("/dd.svg", 100, 100, "dd")} // 新增圖片 1
+        onClick={() => addImage("/dd.svg", "/ddlight.svg", 100, 100, "dd")} // 新增圖片 1
         sx={{ position: "absolute", top: 10, left: 10, zIndex: 100 }}
       >
         Add dd
@@ -263,7 +265,15 @@ const App = () => {
       {/* 新增圖片 2 的按鈕 */}
       <Button
         variant="contained"
-        onClick={() => addImage("/netWorker.svg", 300, 300, "netWorker")} // 新增圖片 2
+        onClick={() =>
+          addImage(
+            "/netWorker.svg",
+            "/netWorkerlight.svg",
+            300,
+            300,
+            "netWorker"
+          )
+        } // 新增圖片 2
         sx={{ position: "absolute", top: 10, left: 150, zIndex: 100 }}
       >
         Add netWorker
@@ -292,6 +302,7 @@ const App = () => {
               x={img.x}
               y={img.y}
               src={img.src}
+              hoverSrc={img.hoverSrc} // 傳遞 hoverSrc
               name={img.name}
               isSelected={selectedImage && selectedImage.id === img.id} // 是否被選中
               onDragMove={(pos) => {
