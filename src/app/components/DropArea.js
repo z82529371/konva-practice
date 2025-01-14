@@ -112,6 +112,7 @@ const DropArea = ({
               name={img.name}
               isSelected={selectedImage && selectedImage.id === img.id}
               onCancel={handleImageDblClick}
+              lightStatus={img.status === "active" ? "green" : "red"} // 動態設置燈的狀態
               onDragMove={(pos) => {
                 // 更新圖片在 state 中的位置
                 setImages((prev) =>

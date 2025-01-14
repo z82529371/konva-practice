@@ -1,6 +1,6 @@
 "use client";
 import React, { useState } from "react";
-import { Group, Image, Rect, Text } from "react-konva";
+import { Group, Image, Rect, Circle, Text } from "react-konva";
 import useImage from "use-image";
 
 const DraggableImageButton = ({
@@ -16,6 +16,7 @@ const DraggableImageButton = ({
   type,
   name,
   onCancel, // 新增刪除事件回調
+  lightStatus, // 新增燈的狀態 ('red' 或 'green')
 }) => {
   const [image] = useImage(src);
   const [hoverImage] = useImage(hoverSrc);
@@ -107,6 +108,28 @@ const DraggableImageButton = ({
             }}
           />
         </>
+      )}
+
+      {/* 右上角的紅燈 / 綠燈 */}
+      {lightStatus === "red" && (
+        <Circle
+          x={108} // 圖片右上角
+          y={-4}
+          radius={8}
+          stroke={"#991B1B"}
+          strokeWidth={2}
+          fill="#EF4444"
+        />
+      )}
+      {lightStatus === "green" && (
+        <Circle
+          x={108} // 圖片右上角
+          y={-4}
+          radius={8}
+          stroke={"#15803D"}
+          strokeWidth={2}
+          fill="#22C55E"
+        />
       )}
 
       {/* 圖片下方的文字背景 */}

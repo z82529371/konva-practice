@@ -35,7 +35,20 @@ function App() {
   }, []);
 
   // 儲存圖片、線條與選中的圖片
-  const [images, setImages] = useState([]);
+  const [images, setImages] = useState([
+    // 示例圖片結構
+    // {
+    //   id: 1,
+    //   src: "image.png",
+    //   hoverSrc: "image_hover.png",
+    //   selectedSrc: "image_selected.png",
+    //   x: 100,
+    //   y: 100,
+    //   type: "dd",
+    //   name: "DD-1",
+    //   status: "active", // 新增狀態屬性
+    // }
+  ]);
   const [lines, setLines] = useState([]);
   const [selectedImage, setSelectedImage] = useState(null);
 
@@ -155,6 +168,20 @@ function App() {
       }
       return [startX, startY, midX, midY, endX, endY];
     }
+  };
+
+  // 切換圖片狀態
+  const toggleStatus = (id) => {
+    setImages((prev) =>
+      prev.map((image) =>
+        image.id === id
+          ? {
+              ...image,
+              status: image.status === "active" ? "inactive" : "active",
+            }
+          : image
+      )
+    );
   };
 
   return (
