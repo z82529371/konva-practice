@@ -84,6 +84,7 @@ const DropArea = ({
               onClick={() => handleLineClick(index)}
               stroke={line.color}
               strokeWidth={3}
+              hitStrokeWidth={20}
               tension={0.01}
               onMouseEnter={(e) => {
                 const stage = e.target.getStage();
