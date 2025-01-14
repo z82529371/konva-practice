@@ -1,7 +1,7 @@
 "use client";
 import React, { useRef, useState, useEffect } from "react";
 import { Stage, Layer, Group, Image, Line, Text } from "react-konva";
-import Button from "@mui/material/Button"; // 引入 MUI 的 Button
+import { Box, Button, IconButton } from "@mui/material/"; // 引入 MUI 的 Button
 import useImage from "use-image";
 import chroma from "chroma-js";
 
@@ -119,7 +119,7 @@ const App = () => {
 
   // 新增圖片
   const addImage = (src, hoverSrc, selectedSrc, x, y, type) => {
-    console.log(selectedSrc);
+    // console.log(selectedSrc);
     // 計算該類型當前的編號
     const typeCount =
       images.filter((img) => img.type.startsWith(type)).length + 1;
@@ -232,36 +232,77 @@ const App = () => {
     return [startX, startY, midX, midY, endX, endY];
   };
 
-  return (
-    <div>
-      {/* 新增圖片 1 的按鈕 */}
-      <Button
-        variant="contained"
-        onClick={() =>
-          addImage("/dd.svg", "/ddlight.svg", "/dddark.svg", 100, 100, "dd")
-        } // 新增圖片 1
-        sx={{ position: "absolute", top: 10, left: 10, zIndex: 100 }}
-      >
-        Add dd
-      </Button>
-      {/* 新增圖片 2 的按鈕 */}
-      <Button
-        variant="contained"
-        onClick={() =>
-          addImage(
-            "/netWorker.svg",
-            "/netWorkerlight.svg",
-            "/netWorkerdark.svg",
-            300,
-            300,
-            "netWorker"
-          )
-        } // 新增圖片 2
-        sx={{ position: "absolute", top: 10, left: 150, zIndex: 100 }}
-      >
-        Add netWorker
-      </Button>
+  // 處理放置圖片
+  const handleDrop = (e) => {
+    e.preventDefault();
 
+    // 確保 stageRef 存在並有效
+    const stage = stageRef.current.getStage();
+
+    // 更新 Konva 的滑鼠位置
+    stage.setPointersPositions(e);
+
+    // 獲取滑鼠在 Stage 的位置
+    const pointerPosition = stage.getPointerPosition();
+    console.log(pointerPosition); // 確認是否真的拿到正確的 x, y
+
+    // 從拖曳資料中解析圖片資訊
+    const { src, type } = JSON.parse(
+      e.dataTransfer.getData("application/json")
+    );
+
+    // 新增圖片
+    addImage(
+      src,
+      null,
+      null,
+      pointerPosition.x - 50,
+      pointerPosition.y - 50,
+      type
+    );
+  };
+
+  return (
+    <Box sx={{ display: "flex", height: "100vh" }}>
+      {/* 工具欄 */}
+      <Box
+        sx={{
+          width: 100,
+          backgroundColor: "#f0f0f0",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          padding: 2,
+          zIndex: 1000,
+          height: 250,
+          borderRadius: 2,
+        }}
+      >
+        <Box
+          draggable
+          onDragStart={(e) => {
+            e.dataTransfer.setData(
+              "application/json",
+              JSON.stringify({ src: "/dd.svg", type: "dd" })
+            );
+          }}
+          sx={{ width: 100, height: 100, marginBottom: 2 }}
+        >
+          <img src="/dd.svg" alt="DD" width={100} height={100} />
+        </Box>
+        <Box
+          draggable
+          onDragStart={(e) => {
+            e.dataTransfer.setData(
+              "application/json",
+              JSON.stringify({ src: "/netWorker.svg", type: "netWorker" })
+            );
+          }}
+          sx={{ width: 100, height: 100 }}
+        >
+          <img src="/netWorker.svg" alt="NetWorker" width={100} height={100} />
+        </Box>
+      </Box>
       {/* Konva 畫布 */}
       <Box
         onDrop={handleDrop}
@@ -285,65 +326,66 @@ const App = () => {
             ))}
           </Layer>
 
-        {/* 圖片的 Layer */}
-        <Layer>
-          {images.map((img) => (
-            <DraggableImageButton
-              key={img.id}
-              x={img.x}
-              y={img.y}
-              src={img.src}
-              hoverSrc={img.hoverSrc} // 傳遞 hoverSrc
-              selectedSrc={img.selectedSrc} // 傳遞 selectedSrc
-              name={img.name}
-              isSelected={selectedImage && selectedImage.id === img.id} // 是否被選中
-              onDragMove={(pos) => {
-                setImages((prev) =>
-                  prev.map((item) =>
-                    item.id === img.id ? { ...item, ...pos } : item
-                  )
-                );
+          {/* 圖片的 Layer */}
+          <Layer>
+            {images.map((img) => (
+              <DraggableImageButton
+                key={img.id}
+                x={img.x}
+                y={img.y}
+                src={img.src}
+                hoverSrc={img.hoverSrc} // 傳遞 hoverSrc
+                selectedSrc={img.selectedSrc} // 傳遞 selectedSrc
+                name={img.name}
+                isSelected={selectedImage && selectedImage.id === img.id} // 是否被選中
+                onDragMove={(pos) => {
+                  setImages((prev) =>
+                    prev.map((item) =>
+                      item.id === img.id ? { ...item, ...pos } : item
+                    )
+                  );
 
-                // 如果拖動的是選中的圖片，更新選中圖片的座標
-                if (selectedImage && selectedImage.id === img.id) {
-                  setSelectedImage({
-                    ...selectedImage,
-                    ...pos,
-                  });
-                }
+                  // 如果拖動的是選中的圖片，更新選中圖片的座標
+                  if (selectedImage && selectedImage.id === img.id) {
+                    setSelectedImage({
+                      ...selectedImage,
+                      ...pos,
+                    });
+                  }
 
-                // 更新與該圖片相關的線條的起點或終點座標
-                setLines((prev) =>
-                  prev.map((line) => {
-                    if (line.start.id === img.id) {
-                      return {
-                        ...line,
-                        start: {
-                          ...line.start,
-                          ...pos,
-                        },
-                      };
-                    } else if (line.end.id === img.id) {
-                      return {
-                        ...line,
-                        end: {
-                          ...line.end,
-                          ...pos,
-                        },
-                      };
-                    } else {
-                      return line;
-                    }
-                  })
-                );
-              }}
-              onClick={() => handleImageClick(img)} // 點擊圖片時觸發
-              onDblClick={handleImageDblClick} // 雙擊取消選中
-            />
-          ))}
-        </Layer>
-      </Stage>
-    </div>
+                  // 更新與該圖片相關的線條的起點或終點座標
+                  setLines((prev) =>
+                    prev.map((line) => {
+                      if (line.start.id === img.id) {
+                        return {
+                          ...line,
+                          start: {
+                            ...line.start,
+                            ...pos,
+                          },
+                        };
+                      } else if (line.end.id === img.id) {
+                        return {
+                          ...line,
+                          end: {
+                            ...line.end,
+                            ...pos,
+                          },
+                        };
+                      } else {
+                        return line;
+                      }
+                    })
+                  );
+                }}
+                onClick={() => handleImageClick(img)} // 點擊圖片時觸發
+                onDblClick={handleImageDblClick} // 雙擊取消選中
+              />
+            ))}
+          </Layer>
+        </Stage>
+      </Box>
+    </Box>
   );
 };
 
