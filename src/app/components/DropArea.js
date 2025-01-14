@@ -91,6 +91,7 @@ const DropArea = ({
               x={img.x}
               y={img.y}
               src={img.src}
+              type={img.type}
               hoverSrc={img.hoverSrc}
               selectedSrc={img.selectedSrc}
               name={img.name}

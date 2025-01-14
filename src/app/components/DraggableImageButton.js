@@ -1,7 +1,7 @@
 // DraggableImageButton.js
 "use client";
 import React, { useState } from "react";
-import { Group, Image, Text } from "react-konva";
+import { Group, Image, Rect, Text } from "react-konva";
 import useImage from "use-image";
 
 const DraggableImageButton = ({
@@ -14,6 +14,7 @@ const DraggableImageButton = ({
   onClick,
   onDblClick,
   isSelected,
+  type,
   name,
 }) => {
   const [image] = useImage(src);
@@ -71,14 +72,24 @@ const DraggableImageButton = ({
           onMouseLeave={() => setHover(false)}
         />
       )}
-      <Text
-        x={0}
+      <Rect
+        x={-10}
         y={110}
+        width={130} // 與 Text 的寬度相同
+        height={20} // 根據需要調整高度
+        fill={type === "dd" ? "#9bc9bc" : "#a2c9e3"} // 根據 type 設定顏色
+        stroke={type === "dd" ? "#065f46" : "#01579b"} // 選中時顯示邊框
+        cornerRadius={4} // 圓角設置，非必要
+      />
+      <Text
+        x={-10}
+        y={114}
         text={name}
         fontSize={14}
         fill="black"
         align="center"
-        width={100}
+        width={130}
+        fontFamily="monospace"
       />
     </Group>
   );

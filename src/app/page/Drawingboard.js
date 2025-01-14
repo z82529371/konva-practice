@@ -43,7 +43,7 @@ function App() {
   const addImage = (src, hoverSrc, selectedSrc, x, y, type) => {
     const typeCount =
       images.filter((img) => img.type.startsWith(type)).length + 1;
-    const name = `${type === "dd" ? "DD" : "NetWorker"} - ${typeCount}`;
+    const name = `${type === "dd" ? "DD" : "NetWorker"}-${typeCount}`;
 
     setImages((prev) => [
       ...prev,
