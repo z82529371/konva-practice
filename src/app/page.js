@@ -247,15 +247,15 @@ const App = () => {
     console.log(pointerPosition); // 確認是否真的拿到正確的 x, y
 
     // 從拖曳資料中解析圖片資訊
-    const { src, type } = JSON.parse(
+    const { src, hoverSrc, selectedSrc, type } = JSON.parse(
       e.dataTransfer.getData("application/json")
     );
 
     // 新增圖片
     addImage(
       src,
-      null,
-      null,
+      hoverSrc,
+      selectedSrc,
       pointerPosition.x - 50,
       pointerPosition.y - 50,
       type
@@ -283,7 +283,12 @@ const App = () => {
           onDragStart={(e) => {
             e.dataTransfer.setData(
               "application/json",
-              JSON.stringify({ src: "/dd.svg", type: "dd" })
+              JSON.stringify({
+                src: "/dd.svg",
+                hoverSrc: "/ddlight.svg",
+                selectedSrc: "/dddark.svg",
+                type: "dd",
+              })
             );
           }}
           sx={{ width: 100, height: 100, marginBottom: 2 }}
@@ -295,7 +300,12 @@ const App = () => {
           onDragStart={(e) => {
             e.dataTransfer.setData(
               "application/json",
-              JSON.stringify({ src: "/netWorker.svg", type: "netWorker" })
+              JSON.stringify({
+                src: "/netWorker.svg",
+                hoverSrc: "/netWorkerlight.svg",
+                selectedSrc: "/netWorkerdark.svg",
+                type: "netWorker",
+              })
             );
           }}
           sx={{ width: 100, height: 100 }}
@@ -321,7 +331,7 @@ const App = () => {
                 points={calculateLinePoints(line.start, line.end)} // 傳入已計算的中間點
                 stroke={line.color} // 線條顏色
                 strokeWidth={2}
-                tension={0.05}
+                tension={0.01}
               />
             ))}
           </Layer>
