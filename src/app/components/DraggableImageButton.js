@@ -57,21 +57,28 @@ const DraggableImageButton = ({
       onClick={onClick}
       onDblClick={onDblClick}
     >
-      {image && (
-        <Image
-          image={
-            isSelected
-              ? selectedImage || image
-              : hover
-              ? hoverImage || image
-              : image
-          }
-          width={100}
-          height={100}
-          onMouseEnter={() => setHover(true)}
-          onMouseLeave={() => setHover(false)}
-        />
-      )}
+      <Image
+        image={
+          isSelected
+            ? selectedImage || image
+            : hover
+            ? hoverImage || image
+            : image
+        }
+        width={100}
+        height={100}
+        onMouseEnter={(e) => {
+          setHover(true);
+          const stage = e.target.getStage();
+          stage.container().style.cursor = "pointer"; // 設定鼠標為手形
+        }}
+        onMouseLeave={(e) => {
+          setHover(false);
+          const stage = e.target.getStage();
+          stage.container().style.cursor = "default"; // 恢復默認鼠標
+        }}
+      />
+
       <Rect
         x={-10}
         y={110}

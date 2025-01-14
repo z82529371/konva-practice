@@ -83,8 +83,16 @@ const DropArea = ({
               )}
               onClick={() => handleLineClick(index)}
               stroke={line.color}
-              strokeWidth={2}
+              strokeWidth={3}
               tension={0.01}
+              onMouseEnter={(e) => {
+                const stage = e.target.getStage();
+                stage.container().style.cursor = "pointer"; // 設定鼠標為手形
+              }}
+              onMouseLeave={(e) => {
+                const stage = e.target.getStage();
+                stage.container().style.cursor = "default"; // 恢復默認鼠標
+              }}
             />
           ))}
         </Layer>
