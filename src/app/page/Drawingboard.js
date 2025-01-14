@@ -111,7 +111,7 @@ function App() {
 
       setLines((prev) => [
         ...prev,
-        { start: selectedImage, end: image, color },
+        { start: selectedImage, end: image, color, isStraight: false },
       ]);
       setSelectedImage(null);
     } else {
@@ -124,25 +124,37 @@ function App() {
     setSelectedImage(null);
   };
 
+  // 切換線條狀態
+  const handleLineClick = (index) => {
+    setLines((prev) =>
+      prev.map((line, i) =>
+        i === index ? { ...line, isStraight: !line.isStraight } : line
+      )
+    );
+  };
+
   // 計算「直角路徑」的輔助函式
-  const calculateLinePoints = (start, end) => {
+  const calculateLinePoints = (start, end, isStraight) => {
     const startX = start.x + 50;
     const startY = start.y + 50;
     const endX = end.x + 50;
     const endY = end.y + 50;
 
-    let midX, midY;
-    if (Math.abs(startX - endX) > Math.abs(startY - endY)) {
-      // 水平優先
-      midX = endX;
-      midY = startY;
+    if (isStraight) {
+      // 直線
+      return [startX, startY, endX, endY];
     } else {
-      // 垂直優先
-      midX = startX;
-      midY = endY;
+      // 直角線
+      let midX, midY;
+      if (Math.abs(startX - endX) > Math.abs(startY - endY)) {
+        midX = endX;
+        midY = startY;
+      } else {
+        midX = startX;
+        midY = endY;
+      }
+      return [startX, startY, midX, midY, endX, endY];
     }
-
-    return [startX, startY, midX, midY, endX, endY];
   };
 
   return (
@@ -190,6 +202,7 @@ function App() {
           setSelectedImage={setSelectedImage}
           addImage={addImage}
           handleImageClick={handleImageClick}
+          handleLineClick={handleLineClick}
           handleImageDblClick={handleImageDblClick}
           calculateLinePoints={calculateLinePoints}
         />

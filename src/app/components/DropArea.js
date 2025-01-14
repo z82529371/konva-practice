@@ -17,6 +17,7 @@ const DropArea = ({
   setSelectedImage,
   addImage,
   handleImageClick,
+  handleLineClick,
   handleImageDblClick,
   calculateLinePoints,
 }) => {
@@ -75,7 +76,12 @@ const DropArea = ({
           {lines.map((line, index) => (
             <Line
               key={index}
-              points={calculateLinePoints(line.start, line.end)}
+              points={calculateLinePoints(
+                line.start,
+                line.end,
+                line.isStraight
+              )}
+              onClick={() => handleLineClick(index)}
               stroke={line.color}
               strokeWidth={2}
               tension={0.01}
