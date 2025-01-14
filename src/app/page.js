@@ -98,15 +98,18 @@ const App = () => {
   const [selectedImage, setSelectedImage] = useState(null); // 追蹤當前被選中的圖片
   const stageRef = useRef(); // 建立 ref
 
+  // 工具欄寬度
+  const TOOLBAR_WIDTH = 100;
+
   const [stageSize, setStageSize] = useState({
-    width: window.innerWidth,
+    width: window.innerWidth - TOOLBAR_WIDTH,
     height: window.innerHeight,
   });
 
   useEffect(() => {
     const handleResize = () => {
       setStageSize({
-        width: window.innerWidth,
+        width: window.innerWidth - TOOLBAR_WIDTH, // 計算畫布寬度
         height: window.innerHeight,
       });
     };
@@ -267,14 +270,13 @@ const App = () => {
       {/* 工具欄 */}
       <Box
         sx={{
-          width: 100,
+          width: TOOLBAR_WIDTH,
           backgroundColor: "#f0f0f0",
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
           padding: 2,
           zIndex: 1000,
-          height: 250,
           borderRadius: 2,
         }}
       >
@@ -313,6 +315,7 @@ const App = () => {
           <img src="/netWorker.svg" alt="NetWorker" width={100} height={100} />
         </Box>
       </Box>
+
       {/* Konva 畫布 */}
       <Box
         onDrop={handleDrop}
