@@ -11,14 +11,16 @@ const DraggableImageButton = ({
   y,
   src,
   hoverSrc, // 新增 hover 狀態的圖片
+  selectedSrc,
   onDragMove,
   onClick,
   onDblClick,
   isSelected,
   name,
 }) => {
-  const [image] = useImage(src); // 使用 useImage 加載圖片
+  const [image] = useImage(src);
   const [hoverImage] = useImage(hoverSrc); // hover 狀態圖片
+  const [selectedImage] = useImage(selectedSrc); // 選中狀態圖片
   const [hover, setHover] = useState(false); // 是否為 hover 狀態
 
   return (
@@ -61,13 +63,21 @@ const DraggableImageButton = ({
       onDblClick={onDblClick} // 雙擊整個群組時觸發
     >
       {/* 圖片 */}
-      <Image
-        image={hover ? hoverImage : image} // 根據 hover 狀態切換圖片
-        width={100}
-        height={100}
-        onMouseEnter={() => setHover(true)} // 滑鼠進入時顯示藍色邊框
-        onMouseLeave={() => setHover(false)} // 滑鼠離開時恢復
-      />
+      {image && (
+        <Image
+          image={
+            isSelected
+              ? selectedImage || image // 選中時優先顯示 `selectedSrc`
+              : hover
+              ? hoverImage || image
+              : image
+          }
+          width={100}
+          height={100}
+          onMouseEnter={() => setHover(true)}
+          onMouseLeave={() => setHover(false)}
+        />
+      )}
       {/* 標籤 */}
       <Text
         x={0} // 與圖片水平對齊
@@ -90,7 +100,8 @@ const App = () => {
   console.log(lines);
 
   // 新增圖片
-  const addImage = (src, hoverSrc, x, y, type) => {
+  const addImage = (src, hoverSrc, selectedSrc, x, y, type) => {
+    console.log(selectedSrc);
     // 計算該類型當前的編號
     const typeCount =
       images.filter((img) => img.type.startsWith(type)).length + 1;
@@ -99,7 +110,7 @@ const App = () => {
 
     setImages((prev) => [
       ...prev,
-      { id: Date.now(), src, hoverSrc, x, y, type, name },
+      { id: Date.now(), src, hoverSrc, selectedSrc, x, y, type, name },
     ]);
   };
 
@@ -257,7 +268,9 @@ const App = () => {
       {/* 新增圖片 1 的按鈕 */}
       <Button
         variant="contained"
-        onClick={() => addImage("/dd.svg", "/ddlight.svg", 100, 100, "dd")} // 新增圖片 1
+        onClick={() =>
+          addImage("/dd.svg", "/ddlight.svg", "/dddark.svg", 100, 100, "dd")
+        } // 新增圖片 1
         sx={{ position: "absolute", top: 10, left: 10, zIndex: 100 }}
       >
         Add dd
@@ -269,6 +282,7 @@ const App = () => {
           addImage(
             "/netWorker.svg",
             "/netWorkerlight.svg",
+            "/netWorkerdark.svg",
             300,
             300,
             "netWorker"
@@ -303,6 +317,7 @@ const App = () => {
               y={img.y}
               src={img.src}
               hoverSrc={img.hoverSrc} // 傳遞 hoverSrc
+              selectedSrc={img.selectedSrc} // 傳遞 selectedSrc
               name={img.name}
               isSelected={selectedImage && selectedImage.id === img.id} // 是否被選中
               onDragMove={(pos) => {
