@@ -1,5 +1,5 @@
 "use client";
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import { Stage, Layer, Group, Image, Line, Text } from "react-konva";
 import Button from "@mui/material/Button"; // 引入 MUI 的 Button
 import useImage from "use-image";
@@ -96,8 +96,26 @@ const App = () => {
   const [images, setImages] = useState([]); // 儲存所有圖片的資訊
   const [lines, setLines] = useState([]); // 儲存所有線條的資訊
   const [selectedImage, setSelectedImage] = useState(null); // 追蹤當前被選中的圖片
+  const stageRef = useRef(); // 建立 ref
 
-  console.log(lines);
+  const [stageSize, setStageSize] = useState({
+    width: window.innerWidth,
+    height: window.innerHeight,
+  });
+
+  useEffect(() => {
+    const handleResize = () => {
+      setStageSize({
+        width: window.innerWidth,
+        height: window.innerHeight,
+      });
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  // console.log(lines);
+  // console.log(stageSize);
 
   // 新增圖片
   const addImage = (src, hoverSrc, selectedSrc, x, y, type) => {
@@ -191,55 +209,6 @@ const App = () => {
     setSelectedImage(null); // 取消選中
   };
 
-  // 處理圖片拖動事件
-  // 處理圖片拖動事件
-  const handleImageDrag = (img, x, y) => {
-    // 獲取畫布的寬高
-    const stageWidth = window.innerWidth;
-    const stageHeight = window.innerHeight;
-
-    // 圖片的寬高 (這裡設定為 100，可根據實際情況調整)
-    const imageWidth = 100;
-    const imageHeight = 100;
-
-    // 限制圖片的邊界，保證不超出畫布
-    const constrainedX = Math.max(0, Math.min(x, stageWidth - imageWidth)); // X 軸邊界限制
-    const constrainedY = Math.max(0, Math.min(y, stageHeight - imageHeight)); // Y 軸邊界限制
-
-    // 更新圖片的座標
-    setImages((prev) =>
-      prev.map((item) =>
-        item.id === img.id
-          ? { ...item, x: constrainedX, y: constrainedY }
-          : item
-      )
-    );
-
-    // 如果拖動的是選中的圖片，更新選中圖片的座標
-    if (selectedImage && selectedImage.id === img.id) {
-      setSelectedImage({ ...selectedImage, x: constrainedX, y: constrainedY });
-    }
-
-    // 更新與該圖片相關的線條的起點或終點座標
-    setLines((prev) =>
-      prev.map((line) => {
-        if (line.start.id === img.id) {
-          return {
-            ...line,
-            start: { ...line.start, x: constrainedX, y: constrainedY },
-          }; // 更新起點
-        } else if (line.end.id === img.id) {
-          return {
-            ...line,
-            end: { ...line.end, x: constrainedX, y: constrainedY },
-          }; // 更新終點
-        } else {
-          return line; // 其他線條不變
-        }
-      })
-    );
-  };
-
   // 計算直角線的點
   const calculateLinePoints = (start, end) => {
     const startX = start.x + 50; // 起點中心
@@ -294,19 +263,27 @@ const App = () => {
       </Button>
 
       {/* Konva 畫布 */}
-      <Stage width={window.innerWidth} height={window.innerHeight}>
-        {/* 線條的 Layer */}
-        <Layer>
-          {lines.map((line, index) => (
-            <Line
-              key={index}
-              points={calculateLinePoints(line.start, line.end)} // 傳入已計算的中間點
-              stroke={line.color} // 線條顏色
-              strokeWidth={2}
-              tension={0.05}
-            />
-          ))}
-        </Layer>
+      <Box
+        onDrop={handleDrop}
+        onDragOver={(e) => e.preventDefault()}
+        sx={{
+          flex: 1,
+          // position: "relative",
+        }}
+      >
+        <Stage ref={stageRef} width={stageSize.width} height={stageSize.height}>
+          {/* 線條的 Layer */}
+          <Layer>
+            {lines.map((line, index) => (
+              <Line
+                key={index}
+                points={calculateLinePoints(line.start, line.end)} // 傳入已計算的中間點
+                stroke={line.color} // 線條顏色
+                strokeWidth={2}
+                tension={0.05}
+              />
+            ))}
+          </Layer>
 
         {/* 圖片的 Layer */}
         <Layer>
