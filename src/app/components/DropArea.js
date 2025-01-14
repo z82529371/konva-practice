@@ -111,6 +111,7 @@ const DropArea = ({
               selectedSrc={img.selectedSrc}
               name={img.name}
               isSelected={selectedImage && selectedImage.id === img.id}
+              onCancel={handleImageDblClick}
               onDragMove={(pos) => {
                 // 更新圖片在 state 中的位置
                 setImages((prev) =>

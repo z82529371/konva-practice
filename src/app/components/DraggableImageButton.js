@@ -1,4 +1,3 @@
-// DraggableImageButton.js
 "use client";
 import React, { useState } from "react";
 import { Group, Image, Rect, Text } from "react-konva";
@@ -16,6 +15,7 @@ const DraggableImageButton = ({
   isSelected,
   type,
   name,
+  onCancel, // 新增刪除事件回調
 }) => {
   const [image] = useImage(src);
   const [hoverImage] = useImage(hoverSrc);
@@ -57,6 +57,7 @@ const DraggableImageButton = ({
       onClick={onClick}
       onDblClick={onDblClick}
     >
+      {/* 主圖片 */}
       <Image
         image={
           isSelected
@@ -79,6 +80,36 @@ const DraggableImageButton = ({
         }}
       />
 
+      {/* 選中狀態的 X 按鈕 */}
+      {isSelected && (
+        <>
+          {/* "X" 文字 */}
+          <Text
+            x={-10} // 對齊背景矩形
+            y={-12}
+            text="X"
+            fontSize={20}
+            fill="#828fa1"
+            fontFamily="Verdana"
+            fontStyle="bold"
+            align="center"
+            onClick={(e) => {
+              e.cancelBubble = true; // 防止事件冒泡
+              onCancel(); // 調用刪除回調
+            }}
+            onMouseEnter={(e) => {
+              const stage = e.target.getStage();
+              stage.container().style.cursor = "pointer"; // 設定鼠標為手形
+            }}
+            onMouseLeave={(e) => {
+              const stage = e.target.getStage();
+              stage.container().style.cursor = "default"; // 恢復默認鼠標
+            }}
+          />
+        </>
+      )}
+
+      {/* 圖片下方的文字背景 */}
       <Rect
         x={-10}
         y={110}
@@ -88,6 +119,8 @@ const DraggableImageButton = ({
         stroke={type === "dd" ? "#065f46" : "#01579b"} // 選中時顯示邊框
         cornerRadius={4} // 圓角設置，非必要
       />
+
+      {/* 圖片下方的文字 */}
       <Text
         x={-10}
         y={114}
