@@ -21,6 +21,8 @@ const DraggableImageButton = ({
   const [image] = useImage(src);
   const [hoverImage] = useImage(hoverSrc);
   const [selectedImage] = useImage(selectedSrc);
+  const [trashIcon] = useImage("/trashcan.svg"); // 替換為實際的垃圾桶圖示路徑
+  const [closeIcon] = useImage("/close.svg"); // 替換為實際的關閉圖示路徑
   const [hover, setHover] = useState(false);
 
   return (
@@ -85,38 +87,55 @@ const DraggableImageButton = ({
       />
 
       {/* 選中狀態的 X 按鈕 */}
+
       {isSelected && (
-        <>
-          {/* "X" 文字 */}
-          <Text
-            x={-10} // 對齊背景矩形
-            y={-12}
-            text="X"
-            fontSize={20}
-            fill="#828fa1"
-            fontFamily="Verdana"
-            fontStyle="bold"
-            align="center"
-            onClick={(e) => {
-              e.cancelBubble = true; // 防止事件冒泡
-              onCancel(); // 調用刪除回調
-            }}
-            onMouseEnter={(e) => {
-              const stage = e.target.getStage();
-              stage.container().style.cursor = "pointer"; // 設定鼠標為手形
-            }}
-            onMouseLeave={(e) => {
-              const stage = e.target.getStage();
-              stage.container().style.cursor = "default"; // 恢復默認鼠標
-            }}
-          />
-        </>
+        <Image
+          image={closeIcon}
+          x={-13}
+          y={-15} // 調整位置至適當位置
+          width={20}
+          height={20}
+          onClick={(e) => {
+            e.cancelBubble = true;
+            onCancel();
+          }}
+          onMouseEnter={(e) => {
+            const stage = e.target.getStage();
+            stage.container().style.cursor = "pointer";
+          }}
+          onMouseLeave={(e) => {
+            const stage = e.target.getStage();
+            stage.container().style.cursor = "default";
+          }}
+        />
+      )}
+
+      {isSelected && (
+        <Image
+          image={trashIcon}
+          x={-12}
+          y={15} // 調整位置至適當位置
+          width={18}
+          height={18}
+          onClick={(e) => {
+            e.cancelBubble = true;
+            onCancel();
+          }}
+          onMouseEnter={(e) => {
+            const stage = e.target.getStage();
+            stage.container().style.cursor = "pointer";
+          }}
+          onMouseLeave={(e) => {
+            const stage = e.target.getStage();
+            stage.container().style.cursor = "default";
+          }}
+        />
       )}
 
       {/* 右上角的紅燈 / 綠燈 */}
       {lightStatus === "red" && (
         <Circle
-          x={108} // 圖片右上角
+          x={109} // 圖片右上角
           y={-4}
           radius={8}
           stroke={"#991B1B"}
@@ -126,7 +145,7 @@ const DraggableImageButton = ({
       )}
       {lightStatus === "green" && (
         <Circle
-          x={108} // 圖片右上角
+          x={109} // 圖片右上角
           y={-4}
           radius={8}
           stroke={"#15803D"}
