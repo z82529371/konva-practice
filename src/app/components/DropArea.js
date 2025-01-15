@@ -1,5 +1,5 @@
 // DropArea.js
-import React, { useState } from "react";
+import React, { use, useState } from "react";
 import { useDrop } from "react-dnd";
 import { Stage, Layer, Group, Rect, Image, Line } from "react-konva";
 import { Box } from "@mui/material";
@@ -114,6 +114,55 @@ const DropArea = ({
     setLines((prevLines) => prevLines.filter((_, i) => i !== index));
   };
 
+  const [isSelecting, setIsSelecting] = useState(false);
+  const [selectionBox, setSelectionBox] = useState(null); // 當前框選框
+  const [selectionBoxes, setSelectionBoxes] = useState([]); // 紀錄所有框框的位置和大小
+
+  // 當鼠標按下時觸發，用於開始框選
+  const handleMouseDown = (e) => {
+    const stage = stageRef.current.getStage();
+    const pointerPosition = stage.getPointerPosition();
+
+    setIsSelecting(true);
+    setSelectionBox({
+      x: pointerPosition.x, // 設置框框的起始 X 座標
+      y: pointerPosition.y, // 設置框框的起始 Y 座標
+      width: 0, // 初始框框寬度為 0
+      height: 0, // 初始框框高度為 0
+    });
+  };
+
+  // 當鼠標移動時觸發，用於更新框框的大小
+  const handleMouseMove = (e) => {
+    if (!isSelecting || !selectionBox) return; // 避免 selectionBox 為 null
+
+    const stage = stageRef.current.getStage();
+    const pointerPosition = stage.getPointerPosition();
+
+    setSelectionBox((prevBox) => ({
+      ...prevBox, // 保留框框的起始位置
+      width: pointerPosition.x - prevBox.x, // 根據鼠標位置計算框框寬度
+      height: pointerPosition.y - prevBox.y, // 根據鼠標位置計算框框高度
+    }));
+  };
+
+  // 當鼠標釋放時觸發，用於完成框選並保存框框數據
+  const handleMouseUp = () => {
+    if (!isSelecting || !selectionBox) return;
+    setIsSelecting(false);
+
+    // 計算框框的最終位置和大小（處理負寬度或負高度的情況）
+    const box = {
+      x: Math.min(selectionBox.x, selectionBox.x + selectionBox.width), // 確保 X 起點為最小值
+      y: Math.min(selectionBox.y, selectionBox.y + selectionBox.height), // 確保 Y 起點為最小值
+      width: Math.abs(selectionBox.width), // 確保寬度為正值
+      height: Math.abs(selectionBox.height), // 確保高度為正值
+    };
+
+    setSelectionBoxes((prevBoxes) => [...prevBoxes, box]); // 保存框框到列表
+    setSelectionBox(null); // 清除當前框框
+  };
+
   return (
     <Box
       ref={dropRef}
@@ -122,7 +171,14 @@ const DropArea = ({
         position: "relative",
       }}
     >
-      <Stage ref={stageRef} width={stageSize.width} height={stageSize.height}>
+      <Stage
+        ref={stageRef}
+        width={stageSize.width}
+        height={stageSize.height}
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+      >
         {/* 線條 Layer */}
         <Layer>
           {lines.map((line, index) => {
@@ -200,6 +256,35 @@ const DropArea = ({
               onDblClick={handleImageDblClick}
             />
           ))}
+        </Layer>
+        {/* 框選 Layer */}
+        <Layer>
+          {/* 保存的框框 */}
+          {selectionBoxes.map((box, index) => (
+            <Rect
+              draggable
+              key={index}
+              x={box.x}
+              y={box.y}
+              width={box.width}
+              height={box.height}
+              stroke="#1778ba"
+              strokeWidth={3}
+            />
+          ))}
+
+          {/* 當前框框 */}
+          {selectionBox && (
+            <Rect
+              x={selectionBox.x}
+              y={selectionBox.y}
+              width={selectionBox.width}
+              height={selectionBox.height}
+              stroke="#1778ba"
+              strokeWidth={3}
+              dash={[10, 5]}
+            />
+          )}
         </Layer>
       </Stage>
       {inputBox && (
