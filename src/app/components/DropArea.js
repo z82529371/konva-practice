@@ -65,15 +65,21 @@ const DropArea = ({
   });
 
   const [inputBox, setInputBox] = useState(null); // 用於追蹤輸入框的位置和文字
-  const [isEditing, setIsEditing] = useState(false);
 
-  const showInputBox = (x, y, text) => {
-    setInputBox({ x, y, text });
+  // 顯示輸入框
+  const showInputBox = (id, x, y, text) => {
+    setImages((prevImages) =>
+      prevImages.map((img) =>
+        img.id === id
+          ? { ...img, isEditing: true }
+          : { ...img, isEditing: false }
+      )
+    );
+    setInputBox({ id, x, y, text });
   };
 
+  // 處理輸入框的輸入
   const handleInputChange = (e) => {
-    setIsEditing(true);
-
     setInputBox((prev) => ({
       ...prev,
 
@@ -81,24 +87,23 @@ const DropArea = ({
     }));
   };
 
+  // 處理輸入框的失去焦點
   const handleInputBlur = () => {
-    setIsEditing(false);
-
-    // 如果輸入框為空值，直接取消修改，恢復到原始值
-    if (!inputBox.text.trim()) {
-      setInputBox(null); // 隱藏輸入框
-      return;
-    }
-
+    // 如果輸入框為空值，恢復到原始值
     setImages((prevImages) =>
       prevImages.map((img) =>
-        img.x === inputBox.x && img.y === inputBox.y
-          ? { ...img, name: inputBox.text }
+        img.id === inputBox.id
+          ? {
+              ...img,
+              name: inputBox.text.trim() ? inputBox.text : img.name,
+              isEditing: false,
+            }
           : img
       )
     );
 
-    setInputBox(null); // 隱藏輸入框
+    // 隱藏輸入框
+    setInputBox(null);
   };
 
   return (
@@ -143,6 +148,7 @@ const DropArea = ({
           {images.map((img) => (
             <DraggableImageButton
               key={img.id}
+              id={img.id}
               x={img.x}
               y={img.y}
               src={img.src}
@@ -156,7 +162,7 @@ const DropArea = ({
               onDelete={() => handleDeleteImage(img.id)}
               handleTextChange={(newName) => handleTextChange(img.id, newName)} // 傳遞回調
               showInputBox={showInputBox}
-              isEditing={isEditing}
+              isEditing={img.isEditing}
               lightStatus={img.status === "active" ? "red" : "green"} // 動態設置燈的狀態
               onDragMove={(pos) => {
                 // 更新圖片在 state 中的位置

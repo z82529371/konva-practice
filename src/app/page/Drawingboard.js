@@ -63,7 +63,17 @@ function App() {
 
     setImages((prev) => [
       ...prev,
-      { id: Date.now(), src, hoverSrc, selectedSrc, x, y, type, name },
+      {
+        id: Date.now(),
+        src,
+        hoverSrc,
+        selectedSrc,
+        x,
+        y,
+        type,
+        name,
+        isEditing: false, // 新增屬性
+      },
     ]);
   };
 

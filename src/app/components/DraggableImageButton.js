@@ -4,6 +4,7 @@ import { Group, Image, Rect, Circle, Text } from "react-konva";
 import useImage from "use-image";
 
 const DraggableImageButton = ({
+  id,
   x,
   y,
   src,
@@ -64,7 +65,7 @@ const DraggableImageButton = ({
           onDragMove({ x: constrainedX, y: constrainedY });
         }}
         onClick={onClick}
-        onDblClick={() => showInputBox(x, y, name)} // 雙擊呼叫外部回調，顯示輸入框
+        onDblClick={() => showInputBox(id, x, y, name)} // 雙擊呼叫外部回調，顯示輸入框
       >
         {/* 主圖片 */}
         <Image
