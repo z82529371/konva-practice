@@ -2,8 +2,6 @@
 import React, { useState } from "react";
 import { Group, Image, Rect, Circle, Text } from "react-konva";
 import useImage from "use-image";
-import TextField from "@mui/material/TextField";
-import { Html } from "react-konva-utils";
 
 const DraggableImageButton = ({
   x,
@@ -13,15 +11,14 @@ const DraggableImageButton = ({
   selectedSrc,
   onDragMove,
   onClick,
-  onDblClick,
   isSelected,
   type,
   name,
   onCancel, // 新增刪除事件回調
   onDelete, // 新增刪除事件回調
   lightStatus, // 新增燈的狀態 ('red' 或 'green')
-  handleTextChange, // 新增文字變更事件回調
-  stageRef, // 新增 stageRef
+  showInputBox, // 新增：用於控制是否顯示輸入框的回調
+  isEditing,
 }) => {
   const [image] = useImage(src);
   const [hoverImage] = useImage(hoverSrc);
@@ -30,19 +27,6 @@ const DraggableImageButton = ({
   const [closeIcon] = useImage("/close.svg"); // 替換為實際的關閉圖示路徑
   const [hover, setHover] = useState(false);
 
-  const [isEditing, setIsEditing] = useState(false); // 控制是否進入編輯模式
-  const [textValue, setTextValue] = useState(name); // 存儲當前文字
-
-  // 計算輸入框的絕對位置
-  const calculateInputPosition = () => {
-    const stage = stageRef.current.getStage();
-    const containerRect = stage.container().getBoundingClientRect();
-    return {
-      top: containerRect.top + y + 100, // 文字框的 Y 位置
-      left: containerRect.left + x - 110, // 文字框的 X 位置
-    };
-  };
-
   return (
     <>
       <Group
@@ -50,7 +34,7 @@ const DraggableImageButton = ({
         y={y}
         draggable
         onDragStart={(e) => {
-          e.target.moveToTop(); // 將圖片移到最上層
+          e.target.moveToTop(); // 將圖片移到最上層f
         }}
         onDragMove={(e) => {
           const stage = e.target.getStage();
@@ -80,7 +64,7 @@ const DraggableImageButton = ({
           onDragMove({ x: constrainedX, y: constrainedY });
         }}
         onClick={onClick}
-        onDblClick={onDblClick}
+        onDblClick={() => showInputBox(x, y, name)} // 雙擊呼叫外部回調，顯示輸入框
       >
         {/* 主圖片 */}
         <Image
@@ -183,45 +167,14 @@ const DraggableImageButton = ({
         <Text
           x={-10}
           y={114}
-          text={name}
+          text={isEditing ? "" : name}
           fontSize={14}
           fill="black"
           align="center"
           width={130}
           fontFamily="monospace"
-          onDblClick={() => {
-            setIsEditing(true);
-          }} // 雙擊切換為輸入框
         />
       </Group>
-
-      {isEditing && (
-        <Html>
-          <TextField
-            value={textValue}
-            variant="standard"
-            onChange={(e) => setTextValue(e.target.value)}
-            onBlur={() => {
-              setIsEditing(false);
-              handleTextChange(textValue);
-            }}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                setIsEditing(false);
-                handleTextChange(textValue);
-              }
-            }}
-            sx={{
-              position: "absolute",
-              ...calculateInputPosition(),
-              width: "130px",
-              textAlign: "center",
-              fontSize: "1px",
-              fontFamily: "monospace",
-            }}
-          />
-        </Html>
-      )}
     </>
   );
 };

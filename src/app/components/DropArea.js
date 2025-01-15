@@ -1,10 +1,11 @@
 // DropArea.js
-import React from "react";
+import React, { useState } from "react";
 import { useDrop } from "react-dnd";
 import { Stage, Layer, Line } from "react-konva";
 import { Box } from "@mui/material";
 import DraggableImageButton from "./DraggableImageButton";
 import { ItemTypes } from "./ToolItem";
+import TextField from "@mui/material/TextField";
 
 const DropArea = ({
   stageRef,
@@ -63,6 +64,43 @@ const DropArea = ({
     }),
   });
 
+  const [inputBox, setInputBox] = useState(null); // 用於追蹤輸入框的位置和文字
+  const [isEditing, setIsEditing] = useState(false);
+
+  const showInputBox = (x, y, text) => {
+    setInputBox({ x, y, text });
+  };
+
+  const handleInputChange = (e) => {
+    setIsEditing(true);
+
+    setInputBox((prev) => ({
+      ...prev,
+
+      text: e.target.value,
+    }));
+  };
+
+  const handleInputBlur = () => {
+    setIsEditing(false);
+
+    // 如果輸入框為空值，直接取消修改，恢復到原始值
+    if (!inputBox.text.trim()) {
+      setInputBox(null); // 隱藏輸入框
+      return;
+    }
+
+    setImages((prevImages) =>
+      prevImages.map((img) =>
+        img.x === inputBox.x && img.y === inputBox.y
+          ? { ...img, name: inputBox.text }
+          : img
+      )
+    );
+
+    setInputBox(null); // 隱藏輸入框
+  };
+
   return (
     <Box
       ref={dropRef}
@@ -117,6 +155,8 @@ const DropArea = ({
               onCancel={handleImageDblClick}
               onDelete={() => handleDeleteImage(img.id)}
               handleTextChange={(newName) => handleTextChange(img.id, newName)} // 傳遞回調
+              showInputBox={showInputBox}
+              isEditing={isEditing}
               lightStatus={img.status === "active" ? "red" : "green"} // 動態設置燈的狀態
               onDragMove={(pos) => {
                 // 更新圖片在 state 中的位置
@@ -158,6 +198,31 @@ const DropArea = ({
           ))}
         </Layer>
       </Stage>
+      {inputBox && (
+        <TextField
+          value={inputBox.text}
+          onChange={handleInputChange}
+          onBlur={handleInputBlur}
+          autoFocus
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              handleInputBlur();
+            }
+          }}
+          sx={{
+            position: "absolute",
+            top: inputBox.y + 109, // 與圖片對齊
+            left: inputBox.x - 11,
+            width: "132px",
+            "& .MuiInputBase-input ": {
+              fontSize: "14px",
+              padding: "0.7px 0",
+              fontFamily: "monospace",
+              textAlign: "center",
+            },
+          }}
+        />
+      )}
     </Box>
   );
 };
