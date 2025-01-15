@@ -52,6 +52,9 @@ function App() {
   const [lines, setLines] = useState([]);
   const [selectedImage, setSelectedImage] = useState(null);
 
+  console.log(images);
+  console.log(lines);
+
   // 新增圖片
   const addImage = (src, hoverSrc, selectedSrc, x, y, type) => {
     const typeCount =
@@ -170,6 +173,23 @@ function App() {
     }
   };
 
+  // 刪除圖片及其連線
+  const handleDeleteImage = (imageId) => {
+    setSelectedImage(null);
+
+    // 刪除圖片
+    setImages((prevImages) =>
+      prevImages.filter((image) => image.id !== imageId)
+    );
+
+    // 刪除與該圖片相關的連線
+    setLines((prevLines) =>
+      prevLines.filter(
+        (line) => line.start.id !== imageId && line.end.id !== imageId
+      )
+    );
+  };
+
   // 切換圖片狀態
   const toggleStatus = (id) => {
     setImages((prev) =>
@@ -232,6 +252,7 @@ function App() {
           handleLineClick={handleLineClick}
           handleImageDblClick={handleImageDblClick}
           calculateLinePoints={calculateLinePoints}
+          handleDeleteImage={handleDeleteImage}
         />
       </Box>
     </DndProvider>

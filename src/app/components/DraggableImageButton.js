@@ -16,6 +16,7 @@ const DraggableImageButton = ({
   type,
   name,
   onCancel, // 新增刪除事件回調
+  onDelete, // 新增刪除事件回調
   lightStatus, // 新增燈的狀態 ('red' 或 'green')
 }) => {
   const [image] = useImage(src);
@@ -119,7 +120,7 @@ const DraggableImageButton = ({
           height={18}
           onClick={(e) => {
             e.cancelBubble = true;
-            onCancel();
+            onDelete();
           }}
           onMouseEnter={(e) => {
             const stage = e.target.getStage();
