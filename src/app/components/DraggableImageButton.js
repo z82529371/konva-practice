@@ -28,6 +28,9 @@ const DraggableImageButton = ({
       x={x}
       y={y}
       draggable
+      onDragStart={(e) => {
+        e.target.moveToTop(); // 將圖片移到最上層
+      }}
       onDragMove={(e) => {
         const stage = e.target.getStage();
         const stageWidth = stage.width();
