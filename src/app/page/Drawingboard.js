@@ -35,25 +35,12 @@ function App() {
   }, []);
 
   // 儲存圖片、線條與選中的圖片
-  const [images, setImages] = useState([
-    // 示例圖片結構
-    // {
-    //   id: 1,
-    //   src: "image.png",
-    //   hoverSrc: "image_hover.png",
-    //   selectedSrc: "image_selected.png",
-    //   x: 100,
-    //   y: 100,
-    //   type: "dd",
-    //   name: "DD-1",
-    //   status: "active", // 新增狀態屬性
-    // }
-  ]);
+  const [images, setImages] = useState([]);
   const [lines, setLines] = useState([]);
   const [selectedImage, setSelectedImage] = useState(null);
 
-  console.log(images);
-  console.log(lines);
+  // console.log(images);
+  // console.log(lines);
 
   // 新增圖片
   const addImage = (src, hoverSrc, selectedSrc, x, y, type) => {

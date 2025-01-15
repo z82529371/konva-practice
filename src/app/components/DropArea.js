@@ -106,6 +106,8 @@ const DropArea = ({
     setInputBox(null);
   };
 
+  const [hoveredLineIndex, setHoveredLineIndex] = useState(null); // 用於追蹤 hover 狀態的線
+
   return (
     <Box
       ref={dropRef}
@@ -127,17 +129,19 @@ const DropArea = ({
                 line.isStraight
               )}
               onClick={() => handleLineClick(index)}
-              stroke={line.color}
+              stroke={hoveredLineIndex === index ? "#ef4444" : line.color}
               strokeWidth={3}
               hitStrokeWidth={20}
               tension={0.01}
               onMouseEnter={(e) => {
                 const stage = e.target.getStage();
                 stage.container().style.cursor = "pointer"; // 設定鼠標為手形
+                setHoveredLineIndex(index);
               }}
               onMouseLeave={(e) => {
                 const stage = e.target.getStage();
                 stage.container().style.cursor = "default"; // 恢復默認鼠標
+                setHoveredLineIndex(null);
               }}
             />
           ))}
