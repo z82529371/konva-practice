@@ -16,6 +16,7 @@
     "canvas": "^3.0.1",
     "chroma-js": "^3.1.2",
     "js-cookie": "^3.0.5",
+    "konva": "^9.3.18",
     "next": "15.1.4",
     "react": "^19.0.0",
     "react-dnd": "^16.0.1",
@@ -23,6 +24,7 @@
     "react-dom": "^19.0.0",
     "react-icons": "^5.4.0",
     "react-konva": "^19.0.2",
+    "react-konva-utils": "^1.0.7",
     "use-image": "^1.1.1"
   },
   "devDependencies": {
