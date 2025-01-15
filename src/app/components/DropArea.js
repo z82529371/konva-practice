@@ -4,6 +4,7 @@ import { useDrop } from "react-dnd";
 import { Stage, Layer, Group, Rect, Image, Line } from "react-konva";
 import { Box } from "@mui/material";
 import DraggableImageButton from "./DraggableImageButton";
+import LineWithTrashIcon from "./LineWithTrashIcon";
 import { ItemTypes } from "./ToolItem";
 import TextField from "@mui/material/TextField";
 import useImage from "use-image";
@@ -108,7 +109,6 @@ const DropArea = ({
   };
 
   const [hoveredLineIndex, setHoveredLineIndex] = useState(null); // 用於追蹤 hover 狀態的線
-  const [trashIcon] = useImage("/trashcan.svg"); // 替換為實際的垃圾桶圖示路徑
 
   const handleDeleteLine = (index) => {
     setLines((prevLines) => prevLines.filter((_, i) => i !== index));
@@ -126,89 +126,17 @@ const DropArea = ({
         {/* 線條 Layer */}
         <Layer>
           {lines.map((line, index) => {
-            // 計算中間點
-            const points = calculateLinePoints(
-              line.start,
-              line.end,
-              line.isStraight
-            );
-            console.log(points);
-            const midX = (points[0] + points[2]) / 2; // 中間點 X
-            const midY = (points[1] + points[3]) / 2; // 中間點 Y
-
             return (
-              <Group key={index}>
-                {/* 線條 */}
-                <Line
-                  points={points}
-                  stroke={hoveredLineIndex === index ? "#666" : line.color}
-                  strokeWidth={3}
-                  hitStrokeWidth={25}
-                  tension={0.01}
-                  onClick={() => handleLineClick(index)} // 點擊整條線觸發
-                  onMouseEnter={(e) => {
-                    const stage = e.target.getStage();
-                    stage.container().style.cursor = "pointer"; // 設定鼠標為手形
-                    setHoveredLineIndex(index);
-                  }}
-                  onMouseLeave={(e) => {
-                    const stage = e.target.getStage();
-                    stage.container().style.cursor = "default"; // 恢復默認鼠標
-                    setHoveredLineIndex(null);
-                  }}
-                />
-
-                {/* 中間點垃圾桶圖示 */}
-                {hoveredLineIndex === index && (
-                  <Group>
-                    {/* 擴大 hover 範圍的透明矩形 */}
-                    <Rect
-                      x={midX - 15} // 擴大範圍
-                      y={midY - 15} // 擴大範圍
-                      width={30} // 擴大範圍
-                      height={30} // 擴大範圍
-                      fill="transparent" // 完全透明但可觸控
-                      onMouseEnter={(e) => {
-                        const stage = e.target.getStage();
-                        stage.container().style.cursor = "pointer"; // 顯示手形指標
-                        setHoveredLineIndex(index); // 維持線的 hover 狀態
-                      }}
-                      onMouseLeave={(e) => {
-                        const stage = e.target.getStage();
-                        stage.container().style.cursor = "default"; // 恢復預設鼠標
-                        setHoveredLineIndex(null); // 結束線的 hover 狀態
-                      }}
-                      onClick={(e) => {
-                        e.cancelBubble = true; // 阻止冒泡到 Line 的 onClick
-                        handleDeleteLine(index);
-                      }}
-                    />
-                    {/* 真實垃圾桶圖示 */}
-                    <Image
-                      x={midX - 10} // 中間點 - 圖示寬度一半
-                      y={midY - 10} // 中間點 - 圖示高度一半
-                      width={20}
-                      height={20}
-                      fill="#fff"
-                      image={trashIcon} // 使用已加載的垃圾桶圖示
-                      onClick={(e) => {
-                        e.cancelBubble = true; // 阻止冒泡到 Line 的 onClick
-                        handleDeleteLine(index);
-                      }}
-                      onMouseEnter={(e) => {
-                        const stage = e.target.getStage();
-                        stage.container().style.cursor = "pointer"; // 顯示手形指標
-                        setHoveredLineIndex(index); // 維持線的 hover 狀態
-                      }}
-                      onMouseLeave={(e) => {
-                        const stage = e.target.getStage();
-                        stage.container().style.cursor = "default"; // 恢復預設鼠標
-                        setHoveredLineIndex(null); // 結束線的 hover 狀態
-                      }}
-                    />
-                  </Group>
-                )}
-              </Group>
+              <LineWithTrashIcon
+                key={index}
+                index={index}
+                line={line}
+                calculateLinePoints={calculateLinePoints}
+                handleLineClick={handleLineClick}
+                handleDeleteLine={handleDeleteLine}
+                hoveredLineIndex={hoveredLineIndex}
+                setHoveredLineIndex={setHoveredLineIndex}
+              />
             );
           })}
         </Layer>
