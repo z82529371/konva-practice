@@ -188,6 +188,7 @@ function App() {
       )
     );
 
+    // 更新框框內容並自動清除空框
     setSelectionBoxes((prevBoxes) =>
       prevBoxes.map((box) => {
         const updatedImages = box.images.filter(
@@ -207,7 +208,7 @@ function App() {
           lines: updatedLines,
         };
       })
-    );
+    ).filter((box) => box.images.length > 0 || box.lines.length > 0);
   };
 
   // 處理圖片名稱變更

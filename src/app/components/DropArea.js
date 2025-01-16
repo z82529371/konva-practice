@@ -263,60 +263,80 @@ const DropArea = ({
   const handleBoxDrag = (e, boxIndex) => {
     const { x, y } = e.target.position();
 
-    // 當前框框
     const currentBox = selectionBoxes[boxIndex];
     const currentImages = currentBox.images || [];
     const currentLines = currentBox.lines || [];
 
-    // 計算拖動的偏移量
     const deltaX = x - currentBox.x;
     const deltaY = y - currentBox.y;
 
-    // 更新框框的位置
-    setSelectionBoxes((prevBoxes) =>
-      prevBoxes.map((box, index) =>
-        index === boxIndex ? { ...box, x, y } : box
+    setSelectionBoxes(
+      (prevBoxes) =>
+        prevBoxes
+          .map((box, index) =>
+            index === boxIndex
+              ? {
+                  ...box,
+                  x,
+                  y,
+                  images: currentImages.map((img) => ({
+                    ...img,
+                    x: img.x + deltaX,
+                    y: img.y + deltaY,
+                  })),
+                  lines: currentLines.map((line) => ({
+                    ...line,
+                    start: {
+                      ...line.start,
+                      x: line.start.x + deltaX,
+                      y: line.start.y + deltaY,
+                    },
+                    end: {
+                      ...line.end,
+                      x: line.end.x + deltaX,
+                      y: line.end.y + deltaY,
+                    },
+                  })),
+                }
+              : box
+          )
+          .filter((box) => box.images.length > 0 || box.lines.length > 0) // 只保留有圖片或線條的框
+    );
+
+    // 同步更新圖片和線條
+    setImages((prevImages) =>
+      prevImages.map((img) =>
+        currentImages.some((selectedImg) => selectedImg.id === img.id)
+          ? { ...img, x: img.x + deltaX, y: img.y + deltaY }
+          : img
       )
     );
 
-    const updatedImages = images.map((img) => {
-      if (currentImages.some((selectedImg) => selectedImg.id === img.id)) {
-        return {
-          ...img,
-          x: img.x + deltaX,
-          y: img.y + deltaY,
-        };
-      }
-      return img;
-    });
-    setImages(updatedImages);
+    setLines((prevLines) =>
+      prevLines.map((line) => {
+        const isStartInBox = currentImages.some(
+          (img) => img.id === line.start.id
+        );
+        const isEndInBox = currentImages.some((img) => img.id === line.end.id);
 
-    // 更新線條的座標
-    const updatedLines = lines.map((line) => {
-      // 更新起點（start）座標
-      const isStartInBox = currentImages.some(
-        (img) => img.id === line.start.id
-      );
-      const isEndInBox = currentImages.some((img) => img.id === line.end.id);
-
-      if (isStartInBox || isEndInBox) {
-        return {
-          ...line,
-          start: isStartInBox
-            ? {
-                ...line.start,
-                x: line.start.x + deltaX,
-                y: line.start.y + deltaY,
-              }
-            : line.start,
-          end: isEndInBox
-            ? { ...line.end, x: line.end.x + deltaX, y: line.end.y + deltaY }
-            : line.end,
-        };
-      }
-      return line;
-    });
-    setLines(updatedLines);
+        if (isStartInBox || isEndInBox) {
+          return {
+            ...line,
+            start: isStartInBox
+              ? {
+                  ...line.start,
+                  x: line.start.x + deltaX,
+                  y: line.start.y + deltaY,
+                }
+              : line.start,
+            end: isEndInBox
+              ? { ...line.end, x: line.end.x + deltaX, y: line.end.y + deltaY }
+              : line.end,
+          };
+        }
+        return line;
+      })
+    );
   };
 
   // 檢查圖片是否在框框內
