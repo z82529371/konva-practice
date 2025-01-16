@@ -83,12 +83,6 @@ const DropArea = ({
     setInputBox({ id, x, y, text });
   };
 
-  const [hoveredLineIndex, setHoveredLineIndex] = useState(null); // 用於追蹤 hover 狀態的線
-
-  const handleDeleteLine = (index) => {
-    setLines((prevLines) => prevLines.filter((_, i) => i !== index));
-  };
-
   const [isSelecting, setIsSelecting] = useState(false);
   const [selectionBox, setSelectionBox] = useState(null); // 當前框選框
 
@@ -215,9 +209,6 @@ const DropArea = ({
     );
     if (isDuplicate) return; // 避免重複添加
 
-    // console.log(selectedImages);
-    // console.log(selectedLines);
-
     // 將選取的圖片和線條設置進框框物件
     setSelectionBoxes((prevBoxes) => [
       ...prevBoxes,
@@ -230,7 +221,8 @@ const DropArea = ({
   };
 
   // console.log(lines);
-  console.log(selectionBoxes);
+  // console.log(images);
+  // console.log(selectionBoxes);
 
   // 當框框拖動時，同步更新框內的圖片和線條
   const handleBoxDrag = (e, boxIndex) => {
@@ -410,11 +402,9 @@ const DropArea = ({
                 key={index}
                 index={index}
                 line={line}
+                setLines={setLines}
                 calculateLinePoints={calculateLinePoints}
                 handleLineClick={handleLineClick}
-                handleDeleteLine={handleDeleteLine}
-                hoveredLineIndex={hoveredLineIndex}
-                setHoveredLineIndex={setHoveredLineIndex}
               />
             );
           })}

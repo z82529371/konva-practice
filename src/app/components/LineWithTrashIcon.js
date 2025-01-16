@@ -1,15 +1,13 @@
-import React from "react";
+import React, { useState } from "react";
 import { Group, Rect, Image, Line } from "react-konva";
 import useImage from "use-image";
 
 const LineWithTrashIcon = ({
   index,
   line,
+  setLines,
   calculateLinePoints,
   handleLineClick,
-  handleDeleteLine,
-  hoveredLineIndex,
-  setHoveredLineIndex,
 }) => {
   const [trashIcon] = useImage("/trashcan.svg"); // 替換為實際的垃圾桶圖示路徑
 
@@ -17,6 +15,12 @@ const LineWithTrashIcon = ({
   const points = calculateLinePoints(line.start, line.end, line.isStraight);
   const midX = (points[0] + points[2]) / 2; // 中間點 X
   const midY = (points[1] + points[3]) / 2; // 中間點 Y
+
+  const [hoveredLineIndex, setHoveredLineIndex] = useState(null); // 用於追蹤 hover 狀態的線
+
+  const handleDeleteLine = (index) => {
+    setLines((prevLines) => prevLines.filter((_, i) => i !== index));
+  };
 
   return (
     <Group key={index}>
