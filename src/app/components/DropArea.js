@@ -220,7 +220,12 @@ const DropArea = ({
         line.end.y >= box.y &&
         line.end.y <= box.y + box.height;
 
-      return startInBox && endInBox; // 起點和終點都在框內
+      return (
+        startInBox &&
+        endInBox &&
+        (selectedImages.some((img) => img.id === line.start.id) ||
+          selectedImages.some((img) => img.id === line.end.id))
+      );
     });
 
     // 如果沒有選中任何圖片或線條，直接返回
@@ -250,30 +255,29 @@ const DropArea = ({
     ]);
   };
 
+  console.log(lines);
+
   // 當框框拖動時，同步更新框內的圖片和線條
   const handleBoxDrag = (e, boxIndex) => {
     const { x, y } = e.target.position();
 
-    // 獲取當前框框
+    // 當前框框
     const currentBox = selectionBoxes[boxIndex];
-
-    console.log(currentBox);
-
-    // 初始化 images 和 lines 屬性
     const currentImages = currentBox.images || [];
     const currentLines = currentBox.lines || [];
 
+    // 計算拖動的偏移量
     const deltaX = x - currentBox.x;
     const deltaY = y - currentBox.y;
 
-    // 更新框框位置
+    // 更新框框的位置
     setSelectionBoxes((prevBoxes) =>
       prevBoxes.map((box, index) =>
         index === boxIndex ? { ...box, x, y } : box
       )
     );
 
-    // 更新框內圖片位置
+    // 更新框框內的圖片座標
     setImages((prevImages) =>
       prevImages.map((img) => {
         if (currentImages.some((selectedImg) => selectedImg.id === img.id)) {
@@ -287,20 +291,32 @@ const DropArea = ({
       })
     );
 
-    // 更新框內線條位置
+    // 更新框框內的線條座標
     setLines((prevLines) =>
       prevLines.map((line) => {
-        if (currentLines.some((selectedLine) => selectedLine.id === line.id)) {
+        // 更新起點（start）座標
+        const isStartInBox = currentImages.some(
+          (img) => img.id === line.start.id
+        );
+        const isEndInBox = currentImages.some((img) => img.id === line.end.id);
+
+        if (isStartInBox || isEndInBox) {
           return {
             ...line,
-            start: {
-              x: line.start.x + deltaX,
-              y: line.start.y + deltaY,
-            },
-            end: {
-              x: line.end.x + deltaX,
-              y: line.end.y + deltaY,
-            },
+            start: isStartInBox
+              ? {
+                  ...line.start,
+                  x: line.start.x + deltaX,
+                  y: line.start.y + deltaY,
+                }
+              : line.start,
+            end: isEndInBox
+              ? {
+                  ...line.end,
+                  x: line.end.x + deltaX,
+                  y: line.end.y + deltaY,
+                }
+              : line.end,
           };
         }
         return line;
