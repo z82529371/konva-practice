@@ -260,83 +260,78 @@ const DropArea = ({
   console.log(selectionBoxes);
 
   // 當框框拖動時，同步更新框內的圖片和線條
+  // 當框框拖動時，同步更新框內的圖片和線條
   const handleBoxDrag = (e, boxIndex) => {
     const { x, y } = e.target.position();
 
+    // 當前框框
     const currentBox = selectionBoxes[boxIndex];
     const currentImages = currentBox.images || [];
     const currentLines = currentBox.lines || [];
 
+    // 計算偏移量
     const deltaX = x - currentBox.x;
     const deltaY = y - currentBox.y;
 
-    setSelectionBoxes(
-      (prevBoxes) =>
-        prevBoxes
-          .map((box, index) =>
-            index === boxIndex
-              ? {
-                  ...box,
-                  x,
-                  y,
-                  images: currentImages.map((img) => ({
-                    ...img,
-                    x: img.x + deltaX,
-                    y: img.y + deltaY,
-                  })),
-                  lines: currentLines.map((line) => ({
-                    ...line,
-                    start: {
-                      ...line.start,
-                      x: line.start.x + deltaX,
-                      y: line.start.y + deltaY,
-                    },
-                    end: {
-                      ...line.end,
-                      x: line.end.x + deltaX,
-                      y: line.end.y + deltaY,
-                    },
-                  })),
-                }
-              : box
-          )
-          .filter((box) => box.images.length > 0 || box.lines.length > 0) // 只保留有圖片或線條的框
+    // 更新框框位置
+    setSelectionBoxes((prevBoxes) =>
+      prevBoxes
+        .map((box, index) =>
+          index === boxIndex
+            ? {
+                ...box,
+                x,
+                y,
+              }
+            : box
+        )
+        .filter((box) => box.images.length > 0 || box.lines.length > 0)
     );
+
+    // 更新圖片位置
+    const updatedImages = images.map((img) => {
+      if (currentImages.some((selectedImg) => selectedImg.id === img.id)) {
+        return {
+          ...img,
+          x: img.x + deltaX,
+          y: img.y + deltaY,
+        };
+      }
+      return img;
+    });
+
+    // 更新線條位置
+    const updatedLines = lines.map((line) => {
+      const isStartInBox = currentImages.some(
+        (img) => img.id === line.start.id
+      );
+      const isEndInBox = currentImages.some((img) => img.id === line.end.id);
+
+      if (isStartInBox || isEndInBox) {
+        return {
+          ...line,
+          start: isStartInBox
+            ? {
+                ...line.start,
+                x: line.start.x + deltaX,
+                y: line.start.y + deltaY,
+              }
+            : line.start,
+          end: isEndInBox
+            ? {
+                ...line.end,
+                x: line.end.x + deltaX,
+                y: line.end.y + deltaY,
+              }
+            : line.end,
+        };
+      }
+      return line;
+    });
 
     // 同步更新圖片和線條
-    setImages((prevImages) =>
-      prevImages.map((img) =>
-        currentImages.some((selectedImg) => selectedImg.id === img.id)
-          ? { ...img, x: img.x + deltaX, y: img.y + deltaY }
-          : img
-      )
-    );
-
-    setLines((prevLines) =>
-      prevLines.map((line) => {
-        const isStartInBox = currentImages.some(
-          (img) => img.id === line.start.id
-        );
-        const isEndInBox = currentImages.some((img) => img.id === line.end.id);
-
-        if (isStartInBox || isEndInBox) {
-          return {
-            ...line,
-            start: isStartInBox
-              ? {
-                  ...line.start,
-                  x: line.start.x + deltaX,
-                  y: line.start.y + deltaY,
-                }
-              : line.start,
-            end: isEndInBox
-              ? { ...line.end, x: line.end.x + deltaX, y: line.end.y + deltaY }
-              : line.end,
-          };
-        }
-        return line;
-      })
-    );
+    setImages(updatedImages);
+    setLines(updatedLines);
   };
 
   // 檢查圖片是否在框框內
@@ -354,35 +349,37 @@ const DropArea = ({
   // 更新框框內的圖片和線條
   const updateBoxImagesAndLines = (updatedImage) => {
     setSelectionBoxes((prevBoxes) =>
-      prevBoxes.map((box) => {
-        const isInBox = isImageInBox(updatedImage, box);
+      prevBoxes
+        .map((box) => {
+          const isInBox = isImageInBox(updatedImage, box);
 
-        // 更新框框內的圖片
-        const updatedImages = isInBox
-          ? [
-              ...box.images.filter((img) => img.id !== updatedImage.id),
-              updatedImage,
-            ]
-          : box.images.filter((img) => img.id !== updatedImage.id);
+          // 更新框框內的圖片
+          const updatedImages = isInBox
+            ? [
+                ...box.images.filter((img) => img.id !== updatedImage.id),
+                updatedImage,
+              ]
+            : box.images.filter((img) => img.id !== updatedImage.id);
 
-        // 更新框框內的線條
-        const updatedLines = lines.filter((line) => {
-          const isStartInBox = updatedImages.some(
-            (img) => img.id === line.start.id
-          );
-          const isEndInBox = updatedImages.some(
-            (img) => img.id === line.end.id
-          );
+          // 更新框框內的線條
+          const updatedLines = lines.filter((line) => {
+            const isStartInBox = updatedImages.some(
+              (img) => img.id === line.start.id
+            );
+            const isEndInBox = updatedImages.some(
+              (img) => img.id === line.end.id
+            );
 
-          return isStartInBox || isEndInBox;
-        });
+            return isStartInBox || isEndInBox;
+          });
 
-        return {
-          ...box,
-          images: updatedImages,
-          lines: updatedLines,
-        };
-      })
+          return {
+            ...box,
+            images: updatedImages,
+            lines: updatedLines,
+          };
+        })
+        .filter((box) => box.images.length > 0 || box.lines.length > 0)
     );
   };
 
