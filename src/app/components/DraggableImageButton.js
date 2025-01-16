@@ -11,6 +11,7 @@ const DraggableImageButton = ({
   hoverSrc,
   selectedSrc,
   onDragMove,
+  onDragEnd,
   onClick,
   isSelected,
   type,
@@ -64,6 +65,7 @@ const DraggableImageButton = ({
 
           onDragMove({ x: constrainedX, y: constrainedY });
         }}
+        onDragEnd={onDragEnd}
         onClick={onClick}
         onDblClick={() => showInputBox(id, x, y, name)} // 雙擊呼叫外部回調，顯示輸入框
       >

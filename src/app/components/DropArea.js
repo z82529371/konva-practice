@@ -255,7 +255,8 @@ const DropArea = ({
     ]);
   };
 
-  console.log(lines);
+  // console.log(lines);
+  console.log(selectionBoxes);
 
   // 當框框拖動時，同步更新框內的圖片和線條
   const handleBoxDrag = (e, boxIndex) => {
@@ -315,6 +316,53 @@ const DropArea = ({
       return line;
     });
     setLines(updatedLines);
+  };
+
+  // 檢查圖片是否在框框內
+  const isImageInBox = (image, box) => {
+    const imgWidth = 100; // 假設圖片寬度為 100
+    const imgHeight = 100; // 假設圖片高度為 100
+    return (
+      image.x >= box.x &&
+      image.x + imgWidth <= box.x + box.width &&
+      image.y >= box.y &&
+      image.y + imgHeight <= box.y + box.height
+    );
+  };
+
+  // 更新框框內的圖片和線條
+  const updateBoxImagesAndLines = (updatedImage) => {
+    setSelectionBoxes((prevBoxes) =>
+      prevBoxes.map((box) => {
+        const isInBox = isImageInBox(updatedImage, box);
+
+        // 更新框框內的圖片
+        const updatedImages = isInBox
+          ? [
+              ...box.images.filter((img) => img.id !== updatedImage.id),
+              updatedImage,
+            ]
+          : box.images.filter((img) => img.id !== updatedImage.id);
+
+        // 更新框框內的線條
+        const updatedLines = lines.filter((line) => {
+          const isStartInBox = updatedImages.some(
+            (img) => img.id === line.start.id
+          );
+          const isEndInBox = updatedImages.some(
+            (img) => img.id === line.end.id
+          );
+
+          return isStartInBox || isEndInBox;
+        });
+
+        return {
+          ...box,
+          images: updatedImages,
+          lines: updatedLines,
+        };
+      })
+    );
   };
 
   return (
@@ -436,6 +484,17 @@ const DropArea = ({
                     return line;
                   })
                 );
+              }}
+              onDragEnd={(pos) => {
+                // 更新圖片在 state 中的位置
+                setImages((prev) =>
+                  prev.map((item) =>
+                    item.id === img.id ? { ...item, ...pos } : item
+                  )
+                );
+
+                // 更新框框的圖片和線條
+                updateBoxImagesAndLines({ ...img, ...pos });
               }}
               onClick={() => handleImageClick(img)}
               onDblClick={handleImageDblClick}
