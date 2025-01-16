@@ -173,7 +173,7 @@ const DropArea = ({
     }));
   };
 
-  // 當鼠標釋放時觸發，用於完成框選並保存框框數據
+  // 如果框內圖片數量少於 2，則不需要保存框框
   const handleMouseUp = () => {
     if (!isSelecting || !selectionBox) return;
     setIsSelecting(false);
@@ -189,38 +189,46 @@ const DropArea = ({
     // 找出框內的圖片並動態調整框框的大小
     let adjustedBox = { ...box };
 
-    // 如果沒有圖片，則不需要保存框框
-    const hasSelectedImages = images.some((img) => {
-      const imgWidth = 100; // 假設圖片寬度為 100
-      const imgHeight = 100; // 假設圖片高度為 100
+    // 如果框內圖片數量少於 2，則不需要保存框框
+    const hasSelectedImages =
+      images.filter((img) => {
+        const imgWidth = 100; // 假設圖片寬度為 100
+        const imgHeight = 100; // 假設圖片高度為 100
 
-      const isImageWithInbox =
-        img.x < adjustedBox.x + adjustedBox.width &&
-        img.x + imgWidth > adjustedBox.x &&
-        img.y < adjustedBox.y + adjustedBox.height &&
-        img.y + imgHeight > adjustedBox.y;
+        const isImageWithinBox =
+          img.x < adjustedBox.x + adjustedBox.width &&
+          img.x + imgWidth > adjustedBox.x &&
+          img.y < adjustedBox.y + adjustedBox.height &&
+          img.y + imgHeight > adjustedBox.y;
 
-      if (isImageWithInbox) {
-        adjustedBox = {
-          x: Math.min(adjustedBox.x, img.x),
-          y: Math.min(adjustedBox.y, img.y),
-          width:
-            Math.max(adjustedBox.x + adjustedBox.width, img.x + imgWidth) -
-            Math.min(adjustedBox.x, img.x),
-          height:
-            Math.max(adjustedBox.y + adjustedBox.height, img.y + imgHeight) -
-            Math.min(adjustedBox.y, img.y),
-        };
-      }
+        if (isImageWithinBox) {
+          adjustedBox = {
+            x: Math.min(adjustedBox.x, img.x),
+            y: Math.min(adjustedBox.y, img.y),
+            width:
+              Math.max(adjustedBox.x + adjustedBox.width, img.x + imgWidth) -
+              Math.min(adjustedBox.x, img.x),
+            height:
+              Math.max(adjustedBox.y + adjustedBox.height, img.y + imgHeight) -
+              Math.min(adjustedBox.y, img.y),
+          };
+        }
 
-      return isImageWithInbox;
-    });
-
-    if (hasSelectedImages) {
-      setSelectionBoxes((prevBoxes) => [...prevBoxes, adjustedBox]); // 保存調整後的框框到列表
-    }
+        return isImageWithinBox;
+      }).length >= 2; // 確保框內至少有兩張圖片
 
     handleSelectionComplete(box); // 處理框選完成
+
+    if (hasSelectedImages) {
+      setSelectionBoxes((prevBoxes) => [
+        ...prevBoxes,
+        {
+          ...adjustedBox,
+          images: [],
+          lines: [], // 初始化 images 和 lines 為空陣列
+        },
+      ]);
+    }
 
     setSelectionBox(null); // 清除當前框框
   };
@@ -258,14 +266,18 @@ const DropArea = ({
     });
 
     // 如果沒有選中任何圖片或線條，直接返回
-    if (selectedImages.length === 0 && selectedLines.length === 0) {
+    if (selectedImages.length < 2) {
       return;
     }
 
     // 將選取的圖片和線條設置進框框物件
     setSelectionBoxes((prevBoxes) => [
       ...prevBoxes,
-      { ...box, images: selectedImages, lines: selectedLines },
+      {
+        ...box,
+        images: selectedImages.length > 0 ? selectedImages : [], // 確保 images 屬性存在
+        lines: selectedLines.length > 0 ? selectedLines : [], // 確保 lines 屬性存在
+      },
     ]);
   };
 
@@ -275,6 +287,12 @@ const DropArea = ({
 
     // 獲取當前框框
     const currentBox = selectionBoxes[boxIndex];
+
+    console.log(currentBox);
+
+    // 初始化 images 和 lines 屬性
+    const currentImages = currentBox.images || [];
+    const currentLines = currentBox.lines || [];
 
     const deltaX = x - currentBox.x;
     const deltaY = y - currentBox.y;
@@ -289,9 +307,7 @@ const DropArea = ({
     // 更新框內圖片位置
     setImages((prevImages) =>
       prevImages.map((img) => {
-        if (
-          currentBox.images.some((selectedImg) => selectedImg.id === img.id)
-        ) {
+        if (currentImages.some((selectedImg) => selectedImg.id === img.id)) {
           return {
             ...img,
             x: img.x + deltaX,
@@ -305,9 +321,7 @@ const DropArea = ({
     // 更新框內線條位置
     setLines((prevLines) =>
       prevLines.map((line) => {
-        if (
-          currentBox.lines.some((selectedLine) => selectedLine.id === line.id)
-        ) {
+        if (currentLines.some((selectedLine) => selectedLine.id === line.id)) {
           return {
             ...line,
             start: {
