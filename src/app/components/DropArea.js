@@ -28,7 +28,6 @@ const DropArea = ({
   handleImageDblClick,
   calculateLinePoints,
   handleDeleteImage,
-  handleTextChange,
 }) => {
   // useDrop: 接收來自 ToolItem (type=TOOL) 的物件
   const [{ isOver }, dropRef] = useDrop({
@@ -438,7 +437,6 @@ const DropArea = ({
               isSelected={selectedImage && selectedImage.id === img.id}
               onCancel={handleImageDblClick}
               onDelete={() => handleDeleteImage(img.id)}
-              handleTextChange={(newName) => handleTextChange(img.id, newName)} // 傳遞回調
               showInputBox={showInputBox}
               isEditing={img.isEditing}
               lightStatus={img.status === "active" ? "red" : "green"} // 動態設置燈的狀態

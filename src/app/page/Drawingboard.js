@@ -213,14 +213,6 @@ function App() {
     });
   };
 
-  // 處理圖片名稱變更
-  const handleTextChange = (id, newName) => {
-    setImages((prevImages) =>
-      prevImages.map((image) =>
-        image.id === id ? { ...image, name: newName } : image
-      )
-    );
-  };
 
   // 切換圖片狀態
   const toggleStatus = (id) => {
@@ -287,7 +279,6 @@ function App() {
           handleImageDblClick={handleImageDblClick}
           calculateLinePoints={calculateLinePoints}
           handleDeleteImage={handleDeleteImage}
-          handleTextChange={handleTextChange}
         />
       </Box>
     </DndProvider>
