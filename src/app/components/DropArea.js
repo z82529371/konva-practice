@@ -220,7 +220,109 @@ const DropArea = ({
       setSelectionBoxes((prevBoxes) => [...prevBoxes, adjustedBox]); // 保存調整後的框框到列表
     }
 
+    handleSelectionComplete(box); // 處理框選完成
+
     setSelectionBox(null); // 清除當前框框
+  };
+
+  // 框選完成時，記錄框內的圖片和線條
+  const handleSelectionComplete = (box) => {
+    // 選取框內的圖片
+    const selectedImages = images.filter((img) => {
+      const imgWidth = 100; // 假設圖片寬度
+      const imgHeight = 100; // 假設圖片高度
+
+      return (
+        img.x >= box.x &&
+        img.x + imgWidth <= box.x + box.width && // 檢查圖片的右邊是否在框內
+        img.y >= box.y &&
+        img.y + imgHeight <= box.y + box.height // 檢查圖片的底部是否在框內
+      );
+    });
+
+    // 選取框內的線條
+    const selectedLines = lines.filter((line) => {
+      const startInBox =
+        line.start.x >= box.x &&
+        line.start.x <= box.x + box.width &&
+        line.start.y >= box.y &&
+        line.start.y <= box.y + box.height;
+
+      const endInBox =
+        line.end.x >= box.x &&
+        line.end.x <= box.x + box.width &&
+        line.end.y >= box.y &&
+        line.end.y <= box.y + box.height;
+
+      return startInBox && endInBox; // 起點和終點都在框內
+    });
+
+    // 如果沒有選中任何圖片或線條，直接返回
+    if (selectedImages.length === 0 && selectedLines.length === 0) {
+      return;
+    }
+
+    // 將選取的圖片和線條設置進框框物件
+    setSelectionBoxes((prevBoxes) => [
+      ...prevBoxes,
+      { ...box, images: selectedImages, lines: selectedLines },
+    ]);
+  };
+
+  // 當框框拖動時，同步更新框內的圖片和線條
+  const handleBoxDrag = (e, boxIndex) => {
+    const { x, y } = e.target.position();
+
+    // 獲取當前框框
+    const currentBox = selectionBoxes[boxIndex];
+
+    const deltaX = x - currentBox.x;
+    const deltaY = y - currentBox.y;
+
+    // 更新框框位置
+    setSelectionBoxes((prevBoxes) =>
+      prevBoxes.map((box, index) =>
+        index === boxIndex ? { ...box, x, y } : box
+      )
+    );
+
+    // 更新框內圖片位置
+    setImages((prevImages) =>
+      prevImages.map((img) => {
+        if (
+          currentBox.images.some((selectedImg) => selectedImg.id === img.id)
+        ) {
+          return {
+            ...img,
+            x: img.x + deltaX,
+            y: img.y + deltaY,
+          };
+        }
+        return img;
+      })
+    );
+
+    // 更新框內線條位置
+    setLines((prevLines) =>
+      prevLines.map((line) => {
+        if (
+          currentBox.lines.some((selectedLine) => selectedLine.id === line.id)
+        ) {
+          return {
+            ...line,
+            start: {
+              x: line.start.x + deltaX,
+              y: line.start.y + deltaY,
+            },
+            end: {
+              x: line.end.x + deltaX,
+              y: line.end.y + deltaY,
+            },
+          };
+        }
+        return line;
+      })
+    );
   };
 
   return (
@@ -239,6 +341,37 @@ const DropArea = ({
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
       >
+        {/* 框選 Layer */}
+        <Layer>
+          {/* 保存的框框 */}
+          {selectionBoxes.map((box, index) => (
+            <Rect
+              key={index}
+              x={box.x}
+              y={box.y}
+              width={box.width}
+              height={box.height}
+              stroke="#1778ba"
+              strokeWidth={3}
+              draggable
+              onDragMove={(e) => handleBoxDrag(e, index)} // 處理框框拖動
+            />
+          ))}
+
+          {/* 當前框框 */}
+          {selectionBox && (
+            <Rect
+              x={selectionBox.x}
+              y={selectionBox.y}
+              width={selectionBox.width}
+              height={selectionBox.height}
+              stroke="#1778ba"
+              strokeWidth={3}
+              dash={[10, 5]}
+            />
+          )}
+        </Layer>
+
         {/* 線條 Layer */}
         <Layer>
           {lines.map((line, index) => {
@@ -316,35 +449,6 @@ const DropArea = ({
               onDblClick={handleImageDblClick}
             />
           ))}
-        </Layer>
-        {/* 框選 Layer */}
-        <Layer>
-          {/* 保存的框框 */}
-          {selectionBoxes.map((box, index) => (
-            <Rect
-              // draggable
-              key={index}
-              x={box.x}
-              y={box.y}
-              width={box.width}
-              height={box.height}
-              stroke="#1778ba"
-              strokeWidth={3}
-            />
-          ))}
-
-          {/* 當前框框 */}
-          {selectionBox && (
-            <Rect
-              x={selectionBox.x}
-              y={selectionBox.y}
-              width={selectionBox.width}
-              height={selectionBox.height}
-              stroke="#1778ba"
-              strokeWidth={3}
-              dash={[10, 5]}
-            />
-          )}
         </Layer>
       </Stage>
       {inputBox && (
