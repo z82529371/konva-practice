@@ -123,6 +123,33 @@ const DropArea = ({
     const stage = stageRef.current.getStage();
     const pointerPosition = stage.getPointerPosition();
 
+    // 判斷是否點擊到圖片
+    const clickedOnImage = images.some((img) => {
+      const imgWidth = 100; // 假設圖片寬度為 100
+      const imgHeight = 100; // 假設圖片高度為 100
+
+      return (
+        pointerPosition.x >= img.x &&
+        pointerPosition.x <= img.x + imgWidth &&
+        pointerPosition.y >= img.y &&
+        pointerPosition.y <= img.y + imgHeight
+      );
+    });
+
+    // 檢查是否點擊到框框
+    const clickedOnBox = selectionBoxes.some((box) => {
+      return (
+        pointerPosition.x >= box.x &&
+        pointerPosition.x <= box.x + box.width &&
+        pointerPosition.y >= box.y &&
+        pointerPosition.y <= box.y + box.height
+      );
+    });
+
+    // 如果點擊到圖片或框框，取消框選
+    if (clickedOnImage || clickedOnBox) return;
+
+    // 否則啟動框選
     setIsSelecting(true);
     setSelectionBox({
       x: pointerPosition.x, // 設置框框的起始 X 座標
@@ -295,7 +322,7 @@ const DropArea = ({
           {/* 保存的框框 */}
           {selectionBoxes.map((box, index) => (
             <Rect
-              draggable
+              // draggable
               key={index}
               x={box.x}
               y={box.y}
