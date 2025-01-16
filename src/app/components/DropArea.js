@@ -9,8 +9,6 @@ import EditableTextField from "./EditableTextField";
 import SelectionBox from "./SelectionBox";
 import CurrentSelectionBox from "./CurrentSelectionBox";
 import { ItemTypes } from "./ToolItem";
-import TextField from "@mui/material/TextField";
-import useImage from "use-image";
 
 const DropArea = ({
   stageRef,
@@ -225,80 +223,6 @@ const DropArea = ({
   // console.log(images);
   // console.log(selectionBoxes);
 
-  // 當框框拖動時，同步更新框內的圖片和線條
-  const handleBoxDrag = (e, boxIndex) => {
-    const { x, y } = e.target.position();
-
-    // 當前框框
-    const currentBox = selectionBoxes[boxIndex];
-    const currentImages = currentBox.images || [];
-    const currentLines = currentBox.lines || [];
-
-    // 計算偏移量
-    const deltaX = x - currentBox.x;
-    const deltaY = y - currentBox.y;
-
-    // 更新框框位置
-    setSelectionBoxes((prevBoxes) =>
-      prevBoxes
-        .map((box, index) =>
-          index === boxIndex
-            ? {
-                ...box,
-                x,
-                y,
-              }
-            : box
-        )
-        .filter((box) => box.images.length > 0 || box.lines.length > 0)
-    );
-
-    // 更新圖片位置
-    const updatedImages = images.map((img) => {
-      if (currentImages.some((selectedImg) => selectedImg.id === img.id)) {
-        return {
-          ...img,
-          x: img.x + deltaX,
-          y: img.y + deltaY,
-        };
-      }
-      return img;
-    });
-
-    // 更新線條位置
-    const updatedLines = lines.map((line) => {
-      const isStartInBox = currentImages.some(
-        (img) => img.id === line.start.id
-      );
-      const isEndInBox = currentImages.some((img) => img.id === line.end.id);
-
-      if (isStartInBox || isEndInBox) {
-        return {
-          ...line,
-          start: isStartInBox
-            ? {
-                ...line.start,
-                x: line.start.x + deltaX,
-                y: line.start.y + deltaY,
-              }
-            : line.start,
-          end: isEndInBox
-            ? {
-                ...line.end,
-                x: line.end.x + deltaX,
-                y: line.end.y + deltaY,
-              }
-            : line.end,
-        };
-      }
-      return line;
-    });
-
-    // 同步更新圖片和線條
-    setImages(updatedImages);
-    setLines(updatedLines);
-  };
-
   // 檢查圖片是否在框框內
   const isImageInBox = (image, box) => {
     const imgWidth = 100; // 假設圖片寬度為 100
@@ -372,7 +296,12 @@ const DropArea = ({
               key={index}
               box={box}
               index={index}
-              onDragMove={handleBoxDrag} // 傳遞拖動事件
+              images={images}
+              setImages={setImages}
+              lines={lines}
+              setLines={setLines}
+              selectionBoxes={selectionBoxes}
+              setSelectionBoxes={setSelectionBoxes}
             />
           ))}
 
