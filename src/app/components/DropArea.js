@@ -7,6 +7,7 @@ import DraggableImageButton from "./DraggableImageButton";
 import LineWithTrashIcon from "./LineWithTrashIcon";
 import EditableTextField from "./EditableTextField";
 import SelectionBox from "./SelectionBox";
+import CurrentSelectionBox from "./CurrentSelectionBox";
 import { ItemTypes } from "./ToolItem";
 import TextField from "@mui/material/TextField";
 import useImage from "use-image";
@@ -367,31 +368,16 @@ const DropArea = ({
         <Layer>
           {/* 保存的框框 */}
           {selectionBoxes.map((box, index) => (
-            <Rect
+            <SelectionBox
               key={index}
-              x={box.x}
-              y={box.y}
-              width={box.width}
-              height={box.height}
-              stroke="#1778ba"
-              strokeWidth={3}
-              draggable
-              onDragMove={(e) => handleBoxDrag(e, index)} // 處理框框拖動
+              box={box}
+              index={index}
+              onDragMove={handleBoxDrag} // 傳遞拖動事件
             />
           ))}
 
           {/* 當前框框 */}
-          {selectionBox && (
-            <Rect
-              x={selectionBox.x}
-              y={selectionBox.y}
-              width={selectionBox.width}
-              height={selectionBox.height}
-              stroke="#1778ba"
-              strokeWidth={3}
-              dash={[10, 5]}
-            />
-          )}
+          {selectionBox && <CurrentSelectionBox box={selectionBox} />}
         </Layer>
 
         {/* 線條 Layer */}
