@@ -173,62 +173,20 @@ const DropArea = ({
     }));
   };
 
-  // 如果框內圖片數量少於 2，則不需要保存框框
+  // 當鼠標放開時觸發，用於完成框選
   const handleMouseUp = () => {
     if (!isSelecting || !selectionBox) return;
     setIsSelecting(false);
 
-    // 計算框框的最終位置和大小（處理負寬度或負高度的情況）
     const box = {
-      x: Math.min(selectionBox.x, selectionBox.x + selectionBox.width), // 確保 X 起點為最小值
-      y: Math.min(selectionBox.y, selectionBox.y + selectionBox.height), // 確保 Y 起點為最小值
-      width: Math.abs(selectionBox.width), // 確保寬度為正值
-      height: Math.abs(selectionBox.height), // 確保高度為正值
+      x: Math.min(selectionBox.x, selectionBox.x + selectionBox.width),
+      y: Math.min(selectionBox.y, selectionBox.y + selectionBox.height),
+      width: Math.abs(selectionBox.width),
+      height: Math.abs(selectionBox.height),
     };
 
-    // 找出框內的圖片並動態調整框框的大小
-    let adjustedBox = { ...box };
-
-    // 如果框內圖片數量少於 2，則不需要保存框框
-    const hasSelectedImages =
-      images.filter((img) => {
-        const imgWidth = 100; // 假設圖片寬度為 100
-        const imgHeight = 100; // 假設圖片高度為 100
-
-        const isImageWithinBox =
-          img.x < adjustedBox.x + adjustedBox.width &&
-          img.x + imgWidth > adjustedBox.x &&
-          img.y < adjustedBox.y + adjustedBox.height &&
-          img.y + imgHeight > adjustedBox.y;
-
-        if (isImageWithinBox) {
-          adjustedBox = {
-            x: Math.min(adjustedBox.x, img.x),
-            y: Math.min(adjustedBox.y, img.y),
-            width:
-              Math.max(adjustedBox.x + adjustedBox.width, img.x + imgWidth) -
-              Math.min(adjustedBox.x, img.x),
-            height:
-              Math.max(adjustedBox.y + adjustedBox.height, img.y + imgHeight) -
-              Math.min(adjustedBox.y, img.y),
-          };
-        }
-
-        return isImageWithinBox;
-      }).length >= 2; // 確保框內至少有兩張圖片
-
-    handleSelectionComplete(box); // 處理框選完成
-
-    if (hasSelectedImages) {
-      setSelectionBoxes((prevBoxes) => [
-        ...prevBoxes,
-        {
-          ...adjustedBox,
-          images: [],
-          lines: [], // 初始化 images 和 lines 為空陣列
-        },
-      ]);
-    }
+    // 處理框選完成，避免在這裡直接添加框框
+    handleSelectionComplete(box);
 
     setSelectionBox(null); // 清除當前框框
   };
@@ -266,9 +224,20 @@ const DropArea = ({
     });
 
     // 如果沒有選中任何圖片或線條，直接返回
-    if (selectedImages.length < 2) {
-      return;
-    }
+    if (selectedImages.length < 2) return;
+
+    // 檢查是否已經存在相同的框框
+    const isDuplicate = selectionBoxes.some(
+      (b) =>
+        b.x === box.x &&
+        b.y === box.y &&
+        b.width === box.width &&
+        b.height === box.height
+    );
+    if (isDuplicate) return; // 避免重複添加
+
+    // console.log(selectedImages);
+    // console.log(selectedLines);
 
     // 將選取的圖片和線條設置進框框物件
     setSelectionBoxes((prevBoxes) => [
