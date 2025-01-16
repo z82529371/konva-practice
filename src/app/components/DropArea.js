@@ -5,6 +5,8 @@ import { Stage, Layer, Group, Rect, Image, Line } from "react-konva";
 import { Box } from "@mui/material";
 import DraggableImageButton from "./DraggableImageButton";
 import LineWithTrashIcon from "./LineWithTrashIcon";
+import EditableTextField from "./EditableTextField";
+import SelectionBox from "./SelectionBox";
 import { ItemTypes } from "./ToolItem";
 import TextField from "@mui/material/TextField";
 import useImage from "use-image";
@@ -80,34 +82,6 @@ const DropArea = ({
       )
     );
     setInputBox({ id, x, y, text });
-  };
-
-  // 處理輸入框的輸入
-  const handleInputChange = (e) => {
-    setInputBox((prev) => ({
-      ...prev,
-
-      text: e.target.value,
-    }));
-  };
-
-  // 處理輸入框的失去焦點
-  const handleInputBlur = () => {
-    // 如果輸入框為空值，恢復到原始值
-    setImages((prevImages) =>
-      prevImages.map((img) =>
-        img.id === inputBox.id
-          ? {
-              ...img,
-              name: inputBox.text.trim() ? inputBox.text : img.name,
-              isEditing: false,
-            }
-          : img
-      )
-    );
-
-    // 隱藏輸入框
-    setInputBox(null);
   };
 
   const [hoveredLineIndex, setHoveredLineIndex] = useState(null); // 用於追蹤 hover 狀態的線
@@ -259,7 +233,6 @@ const DropArea = ({
   // console.log(lines);
   console.log(selectionBoxes);
 
-  // 當框框拖動時，同步更新框內的圖片和線條
   // 當框框拖動時，同步更新框內的圖片和線條
   const handleBoxDrag = (e, boxIndex) => {
     const { x, y } = e.target.position();
@@ -521,28 +494,10 @@ const DropArea = ({
         </Layer>
       </Stage>
       {inputBox && (
-        <TextField
-          value={inputBox.text}
-          onChange={handleInputChange}
-          onBlur={handleInputBlur}
-          autoFocus
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              handleInputBlur();
-            }
-          }}
-          sx={{
-            position: "absolute",
-            top: inputBox.y + 109, // 與圖片對齊
-            left: inputBox.x - 11,
-            width: "132px",
-            "& .MuiInputBase-input ": {
-              fontSize: "14px",
-              padding: "0.7px 0",
-              fontFamily: "monospace",
-              textAlign: "center",
-            },
-          }}
+        <EditableTextField
+          inputBox={inputBox}
+          setInputBox={setInputBox}
+          setImages={setImages}
         />
       )}
     </Box>
