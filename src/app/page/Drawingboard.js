@@ -189,26 +189,28 @@ function App() {
     );
 
     // 更新框框內容並自動清除空框
-    setSelectionBoxes((prevBoxes) =>
-      prevBoxes.map((box) => {
-        const updatedImages = box.images.filter(
-          (image) => image.id !== imageId
-        );
-        const updatedLines = box.lines.filter(
-          (line) =>
-            line.start.id !== imageId &&
-            line.end.id !== imageId &&
-            (updatedImages.some((img) => img.id === line.start.id) ||
-              updatedImages.some((img) => img.id === line.end.id))
-        );
+    setSelectionBoxes((prevBoxes = []) => {
+      return prevBoxes
+        .map((box) => {
+          const updatedImages = box.images.filter(
+            (image) => image.id !== imageId
+          );
+          const updatedLines = box.lines.filter(
+            (line) =>
+              line.start.id !== imageId &&
+              line.end.id !== imageId &&
+              (updatedImages.some((img) => img.id === line.start.id) ||
+                updatedImages.some((img) => img.id === line.end.id))
+          );
 
-        return {
-          ...box,
-          images: updatedImages,
-          lines: updatedLines,
-        };
-      })
-    ).filter((box) => box.images.length > 0 || box.lines.length > 0);
+          return {
+            ...box,
+            images: updatedImages,
+            lines: updatedLines,
+          };
+        })
+        .filter((box) => box.images.length > 0 || box.lines.length > 0);
+    });
   };
 
   // 處理圖片名稱變更
