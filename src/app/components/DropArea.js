@@ -277,51 +277,44 @@ const DropArea = ({
       )
     );
 
-    // 更新框框內的圖片座標
-    setImages((prevImages) =>
-      prevImages.map((img) => {
-        if (currentImages.some((selectedImg) => selectedImg.id === img.id)) {
-          return {
-            ...img,
-            x: img.x + deltaX,
-            y: img.y + deltaY,
-          };
-        }
-        return img;
-      })
-    );
+    const updatedImages = images.map((img) => {
+      if (currentImages.some((selectedImg) => selectedImg.id === img.id)) {
+        return {
+          ...img,
+          x: img.x + deltaX,
+          y: img.y + deltaY,
+        };
+      }
+      return img;
+    });
+    setImages(updatedImages);
 
-    // 更新框框內的線條座標
-    setLines((prevLines) =>
-      prevLines.map((line) => {
-        // 更新起點（start）座標
-        const isStartInBox = currentImages.some(
-          (img) => img.id === line.start.id
-        );
-        const isEndInBox = currentImages.some((img) => img.id === line.end.id);
+    // 更新線條的座標
+    const updatedLines = lines.map((line) => {
+      // 更新起點（start）座標
+      const isStartInBox = currentImages.some(
+        (img) => img.id === line.start.id
+      );
+      const isEndInBox = currentImages.some((img) => img.id === line.end.id);
 
-        if (isStartInBox || isEndInBox) {
-          return {
-            ...line,
-            start: isStartInBox
-              ? {
-                  ...line.start,
-                  x: line.start.x + deltaX,
-                  y: line.start.y + deltaY,
-                }
-              : line.start,
-            end: isEndInBox
-              ? {
-                  ...line.end,
-                  x: line.end.x + deltaX,
-                  y: line.end.y + deltaY,
-                }
-              : line.end,
-          };
-        }
-        return line;
-      })
-    );
+      if (isStartInBox || isEndInBox) {
+        return {
+          ...line,
+          start: isStartInBox
+            ? {
+                ...line.start,
+                x: line.start.x + deltaX,
+                y: line.start.y + deltaY,
+              }
+            : line.start,
+          end: isEndInBox
+            ? { ...line.end, x: line.end.x + deltaX, y: line.end.y + deltaY }
+            : line.end,
+        };
+      }
+      return line;
+    });
+    setLines(updatedLines);
   };
 
   return (
