@@ -8,9 +8,6 @@ import ToolItem from "../components/ToolItem";
 import DropArea from "../components/DropArea";
 import chroma from "chroma-js";
 
-// =============== //
-// === App.jsx === //
-// =============== //
 function App() {
   const stageRef = useRef(null);
 

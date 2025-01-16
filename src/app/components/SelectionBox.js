@@ -14,15 +14,30 @@ const SelectionBox = ({
   // 當框框拖動時，同步更新框內的圖片和線條
   const handleBoxDrag = (e, boxIndex) => {
     const { x, y } = e.target.position();
+    const stage = e.target.getStage();
+    const stageWidth = stage.width(); // 當前視窗寬度
+    const stageHeight = stage.height(); // 當前視窗高度
 
     // 當前框框
     const currentBox = selectionBoxes[boxIndex];
+    const { width, height } = currentBox;
+    const strokeWidth = 3;
+
+    console.log(stageHeight, stageWidth, box.width, box.height);
+
     const currentImages = currentBox.images || [];
     const currentLines = currentBox.lines || [];
 
+    // 限制框框的拖曳範圍，使其剛好契合畫布邊框
+    const newX = Math.max(0, Math.min(x, stageWidth - width));
+    const newY = Math.max(0, Math.min(y, stageHeight - height));
+
     // 計算偏移量
-    const deltaX = x - currentBox.x;
-    const deltaY = y - currentBox.y;
+    const deltaX = newX - currentBox.x;
+    const deltaY = newY - currentBox.y;
+
+    e.target.x(newX);
+    e.target.y(newY);
 
     // 更新框框位置
     setSelectionBoxes((prevBoxes) =>
@@ -31,8 +46,8 @@ const SelectionBox = ({
           index === boxIndex
             ? {
                 ...box,
-                x,
-                y,
+                x: newX,
+                y: newY,
               }
             : box
         )
