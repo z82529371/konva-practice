@@ -159,7 +159,40 @@ const DropArea = ({
       height: Math.abs(selectionBox.height), // 確保高度為正值
     };
 
-    setSelectionBoxes((prevBoxes) => [...prevBoxes, box]); // 保存框框到列表
+    // 找出框內的圖片並動態調整框框的大小
+    let adjustedBox = { ...box };
+
+    // 如果沒有圖片，則不需要保存框框
+    const hasSelectedImages = images.some((img) => {
+      const imgWidth = 100; // 假設圖片寬度為 100
+      const imgHeight = 100; // 假設圖片高度為 100
+
+      const isImageWithInbox =
+        img.x < adjustedBox.x + adjustedBox.width &&
+        img.x + imgWidth > adjustedBox.x &&
+        img.y < adjustedBox.y + adjustedBox.height &&
+        img.y + imgHeight > adjustedBox.y;
+
+      if (isImageWithInbox) {
+        adjustedBox = {
+          x: Math.min(adjustedBox.x, img.x),
+          y: Math.min(adjustedBox.y, img.y),
+          width:
+            Math.max(adjustedBox.x + adjustedBox.width, img.x + imgWidth) -
+            Math.min(adjustedBox.x, img.x),
+          height:
+            Math.max(adjustedBox.y + adjustedBox.height, img.y + imgHeight) -
+            Math.min(adjustedBox.y, img.y),
+        };
+      }
+
+      return isImageWithInbox;
+    });
+
+    if (hasSelectedImages) {
+      setSelectionBoxes((prevBoxes) => [...prevBoxes, adjustedBox]); // 保存調整後的框框到列表
+    }
+
     setSelectionBox(null); // 清除當前框框
   };
 
