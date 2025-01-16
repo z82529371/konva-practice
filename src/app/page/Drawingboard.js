@@ -209,10 +209,9 @@ function App() {
             lines: updatedLines,
           };
         })
-        .filter((box) => box.images.length > 0 || box.lines.length > 0);
+        .filter((box) => box.images.length > 1 || box.lines.length > 0);
     });
   };
-
 
   // 切換圖片狀態
   const toggleStatus = (id) => {

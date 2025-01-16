@@ -268,7 +268,7 @@ const DropArea = ({
             lines: updatedLines,
           };
         })
-        .filter((box) => box.images.length > 0 || box.lines.length > 0)
+        .filter((box) => box.images.length > 1 || box.lines.length > 0)
     );
   };
 
