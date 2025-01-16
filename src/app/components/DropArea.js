@@ -18,6 +18,8 @@ const DropArea = ({
   setLines,
   selectedImage,
   setSelectedImage,
+  selectionBoxes,
+  setSelectionBoxes,
   addImage,
   handleImageClick,
   handleLineClick,
@@ -116,7 +118,6 @@ const DropArea = ({
 
   const [isSelecting, setIsSelecting] = useState(false);
   const [selectionBox, setSelectionBox] = useState(null); // 當前框選框
-  const [selectionBoxes, setSelectionBoxes] = useState([]); // 紀錄所有框框的位置和大小
 
   // 當鼠標按下時觸發，用於開始框選
   const handleMouseDown = (e) => {

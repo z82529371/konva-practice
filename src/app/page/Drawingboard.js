@@ -39,6 +39,8 @@ function App() {
   const [lines, setLines] = useState([]);
   const [selectedImage, setSelectedImage] = useState(null);
 
+  const [selectionBoxes, setSelectionBoxes] = useState([]); // 新增框框狀態
+
   // console.log(images);
   // console.log(lines);
 
@@ -185,6 +187,27 @@ function App() {
         (line) => line.start.id !== imageId && line.end.id !== imageId
       )
     );
+
+    setSelectionBoxes((prevBoxes) =>
+      prevBoxes.map((box) => {
+        const updatedImages = box.images.filter(
+          (image) => image.id !== imageId
+        );
+        const updatedLines = box.lines.filter(
+          (line) =>
+            line.start.id !== imageId &&
+            line.end.id !== imageId &&
+            (updatedImages.some((img) => img.id === line.start.id) ||
+              updatedImages.some((img) => img.id === line.end.id))
+        );
+
+        return {
+          ...box,
+          images: updatedImages,
+          lines: updatedLines,
+        };
+      })
+    );
   };
 
   // 處理圖片名稱變更
@@ -252,7 +275,9 @@ function App() {
           lines={lines}
           setLines={setLines}
           selectedImage={selectedImage}
+          selectionBoxes={selectionBoxes}
           setSelectedImage={setSelectedImage}
+          setSelectionBoxes={setSelectionBoxes}
           addImage={addImage}
           handleImageClick={handleImageClick}
           handleLineClick={handleLineClick}
