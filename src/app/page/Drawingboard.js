@@ -205,6 +205,7 @@ function App() {
             images: updatedImages,
             lines: updatedLines,
             isEditing: false,
+            isHovered: false,
           };
         })
         .filter((box) => box.images.length > 1 || box.lines.length > 0);

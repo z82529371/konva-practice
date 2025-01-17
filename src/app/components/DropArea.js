@@ -297,6 +297,16 @@ const DropArea = ({
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
+        onClick={(e) => {
+          const clickedOnEmpty = e.target === e.target.getStage(); // 確認點擊是否在空白處
+          if (clickedOnEmpty) {
+            // 清除框框的 Hover 狀態
+            setSelectionBoxes((prevBoxes) =>
+              prevBoxes.map((box) => ({ ...box, isHovered: false }))
+            );
+            setSelectedImage(null); // 清空選中圖片
+          }
+        }}
       >
         {/* 框選 Layer */}
         <Layer>

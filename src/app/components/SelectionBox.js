@@ -17,7 +17,6 @@ const SelectionBox = ({
 }) => {
   const transformerRef = useRef(null); // 用於操作 Transformer
   const shapeRef = useRef(null); // 用於操作圖形元素
-  const [isHovered, setIsHovered] = useState(false); // 追蹤是否 hover
   const [isTransforming, setIsTransforming] = useState(false); // 追蹤是否正在縮放
   const [isDragging, setIsDragging] = useState(false); // 追蹤拖動狀態
 
@@ -183,7 +182,7 @@ const SelectionBox = ({
       transformer.nodes([shape]); // 附加 Transformer
       transformer.getLayer().batchDraw(); // 刷新圖層
     }
-  }, [box, isHovered]); // 確保 hover 狀態更新時刷新 Transformer
+  }, [box, box.isHovered]); // 確保 hover 狀態更新時刷新 Transformer
 
   return (
     <>
@@ -208,17 +207,27 @@ const SelectionBox = ({
           handleTransformEnd(e);
         }}
         onMouseEnter={(e) => {
-          setIsHovered(true); // 設定 hover 狀態
+          setSelectionBoxes((prevBoxes) =>
+            prevBoxes.map((b, i) =>
+              i === index ? { ...b, isHovered: true } : b
+            )
+          );
           e.target.getStage().container().style.cursor = "move"; // 轉為移動型游標
         }}
         onMouseLeave={(e) => {
           e.target.getStage().container().style.cursor = "default"; // 還原游標
         }}
-        onClick={() => setIsHovered(false)} // 滑鼠離開時
+        onClick={() => {
+          setSelectionBoxes((prevBoxes) =>
+            prevBoxes.map((b, i) =>
+              i === index ? { ...b, isHovered: false } : b
+            )
+          );
+        }} // 滑鼠離開時
       />
 
       {/* 刪除按鈕 */}
-      {isHovered && !isTransforming && !isDragging && shapeRef.current && (
+      {box.isHovered && !isTransforming && !isDragging && shapeRef.current && (
         <Image
           image={isTrashHovered ? trashDarkIcon : trashIcon} // 根據 hover 切換圖片
           x={box.x + box.width - 15} // 框框右邊緣
@@ -238,7 +247,7 @@ const SelectionBox = ({
       )}
 
       {/* 文字按鈕 */}
-      {isHovered && !isTransforming && !isDragging && shapeRef.current && (
+      {box.isHovered && !isTransforming && !isDragging && shapeRef.current && (
         <Image
           image={isTextHovered ? textDarkIcon : textIcon} // 根據 hover 切換圖片
           x={box.x + box.width - 50} // 框框右邊緣
@@ -306,7 +315,8 @@ const SelectionBox = ({
           />
         )}
 
-      {(isHovered || (shapeRef.current && shapeRef.current.isDragging())) && (
+      {(box.isHovered ||
+        (shapeRef.current && shapeRef.current.isDragging())) && (
         <Transformer
           ref={transformerRef}
           anchorSize={12}
