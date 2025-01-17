@@ -20,10 +20,12 @@ const SelectionBox = ({
   const [isDragging, setIsDragging] = useState(false); // 追蹤拖動狀態
 
   const [isTrashHovered, setIsTrashHovered] = useState(false);
+  const [isTextHovered, setIsTextHovered] = useState(false);
 
   const [trashIcon] = useImage("/groupTrashcan.svg"); // 替換為實際的垃圾桶圖示路徑
   const [trashDarkIcon] = useImage("/groupTrashcandark.svg"); // 替換為實際的垃圾桶圖示路徑
-  
+  const [textIcon] = useImage("/letterT.svg"); // 替換為實際的垃圾桶圖示路徑
+  const [textDarkIcon] = useImage("/letterTdark.svg"); // 替換為實際的垃圾桶圖示路徑
 
   // 當框框拖動時，同步更新框內的圖片和線條
   const handleBoxDrag = (e, boxIndex) => {
@@ -228,6 +230,26 @@ const SelectionBox = ({
           }}
           onMouseLeave={(e) => {
             setIsTrashHovered(false); // 取消垃圾桶 hover 狀態
+            e.target.getStage().container().style.cursor = "default";
+          }}
+        />
+      )}
+
+      {/* 文字按鈕 */}
+      {isHovered && !isTransforming && !isDragging && shapeRef.current && (
+        <Image
+          image={isTextHovered ? textDarkIcon : textIcon} // 根據 hover 切換圖片
+          x={box.x + box.width - 50} // 框框右邊緣
+          y={box.y - 36} // 框框上方（負值可以讓 icon 提升到框外）
+          width={24}
+          height={24}
+          // onClick={handleDelete}
+          onMouseEnter={(e) => {
+            setIsTextHovered(true);
+            e.target.getStage().container().style.cursor = "pointer";
+          }}
+          onMouseLeave={(e) => {
+            setIsTextHovered(false);
             e.target.getStage().container().style.cursor = "default";
           }}
         />
