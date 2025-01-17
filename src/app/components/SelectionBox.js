@@ -154,7 +154,10 @@ const SelectionBox = ({
         onDragMove={(e) => handleBoxDrag(e, index)} // 傳遞拖動事件
         onTransformEnd={handleTransformEnd}
       />
-      <Transformer ref={transformerRef} />
+      <Transformer
+        ref={transformerRef}
+        rotateEnabled={false} // 禁用旋轉
+      />
     </>
   );
 };
