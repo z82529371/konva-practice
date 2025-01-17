@@ -265,8 +265,7 @@ const SelectionBox = ({
       )}
 
       {/* 框框上方的文字背景 */}
-      {isHovered &&
-        !isTransforming &&
+      {!isTransforming &&
         !isDragging &&
         (box.name || isEditing) && // 如果有名稱或正在編輯中，顯示背景
         shapeRef.current && (
@@ -282,8 +281,7 @@ const SelectionBox = ({
         )}
 
       {/* 框框上方的文字 */}
-      {isHovered &&
-        !isTransforming &&
+      {!isTransforming &&
         !isDragging &&
         !isEditing &&
         box.name &&
