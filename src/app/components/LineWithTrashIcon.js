@@ -9,7 +9,10 @@ const LineWithTrashIcon = ({
   calculateLinePoints,
   handleLineClick,
 }) => {
+  const [isTrashHovered, setIsTrashHovered] = useState(false);
+
   const [trashIcon] = useImage("/trashcan.svg"); // 替換為實際的垃圾桶圖示路徑
+  const [trashDarkIcon] = useImage("/trashcanDark.svg"); // 替換為實際的垃圾桶圖示路徑
 
   // 計算中間點
   const points = calculateLinePoints(line.start, line.end, line.isStraight);
@@ -76,17 +79,19 @@ const LineWithTrashIcon = ({
             width={20}
             height={20}
             fill={"#fff"}
-            image={trashIcon}
+            image={isTrashHovered ? trashDarkIcon : trashIcon}
             onClick={(e) => {
               e.cancelBubble = true; // 阻止冒泡
               handleDeleteLine(index);
             }}
             onMouseEnter={(e) => {
+              setIsTrashHovered(true);
               const stage = e.target.getStage();
               stage.container().style.cursor = "pointer";
               setHoveredLineIndex(index);
             }}
             onMouseLeave={(e) => {
+              setIsTrashHovered(false);
               const stage = e.target.getStage();
               stage.container().style.cursor = "default";
               setHoveredLineIndex(null);

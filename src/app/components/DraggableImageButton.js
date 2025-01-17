@@ -25,9 +25,15 @@ const DraggableImageButton = ({
   const [image] = useImage(src);
   const [hoverImage] = useImage(hoverSrc);
   const [selectedImage] = useImage(selectedSrc);
-  const [trashIcon] = useImage("/trashcan.svg"); // 替換為實際的垃圾桶圖示路徑
-  const [closeIcon] = useImage("/close.svg"); // 替換為實際的關閉圖示路徑
   const [hover, setHover] = useState(false);
+
+  const [isTrashHovered, setIsTrashHovered] = useState(false);
+  const [isCloseHovered, setIsCloseHovered] = useState(false);
+
+  const [trashIcon] = useImage("/trashcan.svg"); // 替換為實際的垃圾桶圖示路徑
+  const [trashDarkIcon] = useImage("/trashcanDark.svg"); // 替換為實際的垃圾桶圖示路徑
+  const [closeIcon] = useImage("/close.svg"); // 替換為實際的關閉圖示路徑
+  const [closeDarkIcon] = useImage("/closeDark.svg");
 
   return (
     <>
@@ -94,7 +100,8 @@ const DraggableImageButton = ({
         {/* 選中狀態的 X 按鈕 */}
         {isSelected && (
           <Image
-            image={closeIcon}
+            // image={closeIcon}
+            image={isCloseHovered ? closeDarkIcon : closeIcon}
             x={-13}
             y={-15} // 調整位置至適當位置
             width={20}
@@ -102,12 +109,15 @@ const DraggableImageButton = ({
             onClick={(e) => {
               e.cancelBubble = true;
               onCancel();
+              setIsCloseHovered(false);
             }}
             onMouseEnter={(e) => {
+              setIsCloseHovered(true);
               const stage = e.target.getStage();
               stage.container().style.cursor = "pointer";
             }}
             onMouseLeave={(e) => {
+              setIsCloseHovered(false);
               const stage = e.target.getStage();
               stage.container().style.cursor = "default";
             }}
@@ -115,7 +125,7 @@ const DraggableImageButton = ({
         )}
         {isSelected && (
           <Image
-            image={trashIcon}
+            image={isTrashHovered ? trashDarkIcon : trashIcon}
             x={-12}
             y={15} // 調整位置至適當位置
             width={18}
@@ -125,10 +135,12 @@ const DraggableImageButton = ({
               onDelete();
             }}
             onMouseEnter={(e) => {
+              setIsTrashHovered(true);
               const stage = e.target.getStage();
               stage.container().style.cursor = "pointer";
             }}
             onMouseLeave={(e) => {
+              setIsTrashHovered(false);
               const stage = e.target.getStage();
               stage.container().style.cursor = "default";
             }}
