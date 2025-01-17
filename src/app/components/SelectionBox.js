@@ -1,5 +1,6 @@
 import React, { useRef, useEffect, useState } from "react";
-import { Rect, Transformer } from "react-konva";
+import { Rect, Transformer, Image } from "react-konva";
+import useImage from "use-image";
 
 const SelectionBox = ({
   box,
@@ -15,6 +16,8 @@ const SelectionBox = ({
   const transformerRef = useRef(null); // 用於操作 Transformer
   const shapeRef = useRef(null); // 用於操作圖形元素
   const [isHovered, setIsHovered] = useState(false); // 追蹤是否 hover
+
+  const [trashIcon] = useImage("/groupTrashcan.svg"); // 替換為實際的垃圾桶圖示路徑
 
   // 當框框拖動時，同步更新框內的圖片和線條
   const handleBoxDrag = (e, boxIndex) => {
@@ -154,6 +157,13 @@ const SelectionBox = ({
     node.scaleY(1);
   };
 
+  // 刪除框框
+  const handleDelete = () => {
+    setSelectionBoxes((prevBoxes) =>
+      prevBoxes.filter((_, idx) => idx !== index)
+    );
+  };
+
   // 持續將 Transformer 附加到 Rect
   useEffect(() => {
     const transformer = transformerRef.current;
@@ -189,10 +199,30 @@ const SelectionBox = ({
         }}
         onClick={() => setIsHovered(false)} // 滑鼠離開時
       />
+
+      {/* 刪除按鈕 */}
+      {isHovered && shapeRef.current && (
+        <Image
+          image={trashIcon}
+          x={box.x + box.width - 15} // 框框右邊緣
+          y={box.y - 35} // 框框上方（負值可以讓 icon 提升到框外）
+          width={20}
+          height={20}
+          onClick={handleDelete}
+          onMouseEnter={(e) => {
+            e.target.getStage().container().style.cursor = "pointer";
+          }}
+          onMouseLeave={(e) => {
+            e.target.getStage().container().style.cursor = "default";
+          }}
+        />
+      )}
+
       {(isHovered || (shapeRef.current && shapeRef.current.isDragging())) && (
         <Transformer
           ref={transformerRef}
           anchorSize={12}
+          anchorStrokeWidth={2}
           rotateEnabled={false} // 禁用旋轉
         />
       )}
