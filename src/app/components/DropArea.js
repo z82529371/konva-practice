@@ -302,6 +302,7 @@ const DropArea = ({
               setLines={setLines}
               selectionBoxes={selectionBoxes}
               setSelectionBoxes={setSelectionBoxes}
+              isImageInBox={isImageInBox}
             />
           ))}
 

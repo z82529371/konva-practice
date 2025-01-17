@@ -10,6 +10,7 @@ const SelectionBox = ({
   setLines,
   selectionBoxes,
   setSelectionBoxes,
+  isImageInBox,
 }) => {
   const transformerRef = useRef(null); // 用於操作 Transformer
   const shapeRef = useRef(null); // 用於操作圖形元素
@@ -105,23 +106,33 @@ const SelectionBox = ({
     const newWidth = node.width() * node.scaleX(); // 計算新寬度
     const newHeight = node.height() * node.scaleY(); // 計算新高度
 
-    // 更新框框屬性
-    setSelectionBoxes((prevBoxes) => {
-      // 確保 prevBoxes 為數組
-      if (!Array.isArray(prevBoxes)) return [];
+    const newBox = {
+      x: node.x(),
+      y: node.y(),
+      width: newWidth,
+      height: newHeight,
+    };
 
-      return prevBoxes.map((b, idx) =>
-        idx === index
-          ? {
-              ...b,
-              x: node.x(),
-              y: node.y(),
-              width: newWidth,
-              height: newHeight,
-            }
-          : b
+    const imagesInBox = images.filter((img) => isImageInBox(img, newBox));
+
+    if (imagesInBox.length <= 1) {
+      // 如果框框內沒有圖片，移除該框框
+      setSelectionBoxes((prevBoxes) =>
+        prevBoxes.filter((b, idx) => idx !== index)
       );
-    });
+    } else {
+      // 否則更新框框屬性
+      setSelectionBoxes((prevBoxes) =>
+        prevBoxes.map((b, idx) =>
+          idx === index
+            ? {
+                ...b,
+                ...newBox,
+              }
+            : b
+        )
+      );
+    }
 
     // 重置縮放比例
     node.scaleX(1);
