@@ -36,6 +36,7 @@ const SelectionBox = ({
     const deltaX = newX - currentBox.x;
     const deltaY = newY - currentBox.y;
 
+    // 直接在 Konva 物件上更新位置
     e.target.x(newX);
     e.target.y(newY);
 
@@ -100,12 +101,23 @@ const SelectionBox = ({
     setLines(updatedLines);
   };
 
-  // 初始化 Transformer
+  // 處理框框調整結束的事件
   const handleTransformEnd = () => {
     const node = shapeRef.current;
-    const newWidth = node.width() * node.scaleX(); // 計算新寬度
-    const newHeight = node.height() * node.scaleY(); // 計算新高度
 
+    // 計算新框框的寬度與高度
+    const newWidth = node.width() * node.scaleX();
+    const newHeight = node.height() * node.scaleY();
+
+    // 更新 Konva node 的屬性，避免因縮放比例閃動
+    node.setAttrs({
+      width: newWidth,
+      height: newHeight,
+      scaleX: 1,
+      scaleY: 1,
+    });
+
+    // 更新框框的新位置與大小
     const newBox = {
       x: node.x(),
       y: node.y(),
@@ -113,41 +125,30 @@ const SelectionBox = ({
       height: newHeight,
     };
 
+    // 找出框框內的圖片
     const imagesInBox = images.filter((img) => isImageInBox(img, newBox));
 
     if (imagesInBox.length <= 1) {
-      // 如果框框內沒有圖片，移除該框框
+      // 如果框框內圖片數量不足，移除該框框
       setSelectionBoxes((prevBoxes) =>
-        prevBoxes.filter((b, idx) => idx !== index)
+        prevBoxes.filter((_, idx) => idx !== index)
       );
     } else {
-      // 否則更新框框屬性
+      // 更新框框屬性，包含新位置與框框內圖片
       setSelectionBoxes((prevBoxes) =>
-        prevBoxes.map((b, idx) => {
-          if (idx === index) {
-            return {
-              ...b,
-              ...newBox,
-              images: imagesInBox, // 更新框框內的圖片
-            };
-          }
-          return b;
-        })
+        prevBoxes.map((b, idx) =>
+          idx === index ? { ...b, ...newBox, images: imagesInBox } : b
+        )
       );
 
-      const excludedImages = images.filter((img) => !isImageInBox(img, newBox)); // 找出不在框框內的圖片
+      // 更新不在框框內的圖片屬性，將 groupId 設為 null
       const updatedImages = images.map((img) =>
-        excludedImages.includes(img)
-          ? {
-              ...img,
-              groupId: null,
-            }
-          : img
+        imagesInBox.includes(img) ? img : { ...img, groupId: null }
       );
       setImages(updatedImages);
     }
 
-    // 重置縮放比例
+    // 重置縮放比例，避免影響後續操作
     node.scaleX(1);
     node.scaleY(1);
   };
