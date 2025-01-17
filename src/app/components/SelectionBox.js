@@ -16,6 +16,8 @@ const SelectionBox = ({
   const transformerRef = useRef(null); // 用於操作 Transformer
   const shapeRef = useRef(null); // 用於操作圖形元素
   const [isHovered, setIsHovered] = useState(false); // 追蹤是否 hover
+  const [isTransforming, setIsTransforming] = useState(false); // 追蹤是否正在縮放
+  const [isDragging, setIsDragging] = useState(false); // 追蹤拖動狀態
 
   const [trashIcon] = useImage("/groupTrashcan.svg"); // 替換為實際的垃圾桶圖示路徑
 
@@ -185,11 +187,18 @@ const SelectionBox = ({
         width={box.width}
         height={box.height}
         stroke="#1778ba"
-        // hitStrokeWidth={25}
         strokeWidth={3}
         draggable
-        onDragMove={(e) => handleBoxDrag(e, index)} // 傳遞拖動事件
-        onTransformEnd={handleTransformEnd}
+        onDragStart={() => setIsDragging(true)} // 開始拖動
+        onDragMove={(e) => {
+          handleBoxDrag(e, index);
+        }} // 傳遞拖動事件
+        onDragEnd={() => setIsDragging(false)} // 結束拖動
+        onTransformStart={() => setIsTransforming(true)} // 開始調整大小
+        onTransformEnd={(e) => {
+          setIsTransforming(false); // 結束調整大小
+          handleTransformEnd(e);
+        }}
         onMouseEnter={(e) => {
           setIsHovered(true); // 設定 hover 狀態
           e.target.getStage().container().style.cursor = "move"; // 轉為移動型游標
@@ -201,7 +210,7 @@ const SelectionBox = ({
       />
 
       {/* 刪除按鈕 */}
-      {isHovered && shapeRef.current && (
+      {isHovered && !isTransforming && !isDragging && shapeRef.current && (
         <Image
           image={trashIcon}
           x={box.x + box.width - 15} // 框框右邊緣
