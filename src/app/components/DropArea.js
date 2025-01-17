@@ -5,7 +5,7 @@ import { Stage, Layer, Group, Rect, Image, Line } from "react-konva";
 import { Box } from "@mui/material";
 import DraggableImageButton from "./DraggableImageButton";
 import LineWithTrashIcon from "./LineWithTrashIcon";
-import EditableTextField from "./EditableTextField";
+import ImageTextField from "./ImageTextField";
 import SelectionBox from "./SelectionBox";
 import CurrentSelectionBox from "./CurrentSelectionBox";
 import { ItemTypes } from "./ToolItem";
@@ -68,7 +68,7 @@ const DropArea = ({
     }),
   });
 
-  const [inputBox, setInputBox] = useState(null); // 用於追蹤輸入框的位置和文字
+  const [imageInputBox, setImageInputBox] = useState(null); // 用於追蹤輸入框的位置和文字
   const [isSelecting, setIsSelecting] = useState(false);
   const [selectionBox, setSelectionBox] = useState(null); // 當前框選框
 
@@ -81,7 +81,7 @@ const DropArea = ({
           : { ...img, isEditing: false }
       )
     );
-    setInputBox({ id, x, y, text });
+    setImageInputBox({ id, x, y, text });
   };
 
   // 當鼠標按下時觸發，用於開始框選
@@ -397,10 +397,10 @@ const DropArea = ({
       </Stage>
 
       {/* 文字輸入框 */}
-      {inputBox && (
-        <EditableTextField
-          inputBox={inputBox}
-          setInputBox={setInputBox}
+      {imageInputBox && (
+        <ImageTextField
+          inputBox={imageInputBox}
+          setInputBox={setImageInputBox}
           setImages={setImages}
         />
       )}

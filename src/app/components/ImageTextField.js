@@ -1,7 +1,7 @@
 import React from "react";
 import TextField from "@mui/material/TextField";
 
-const EditableTextField = ({ inputBox, setInputBox, setImages }) => {
+const ImageTextField = ({ inputBox, setInputBox, setImages }) => {
   if (!inputBox) return null;
 
   // 處理輸入框的輸入
@@ -44,4 +44,4 @@ const EditableTextField = ({ inputBox, setInputBox, setImages }) => {
   );
 };
 
-export default EditableTextField;
+export default ImageTextField;
