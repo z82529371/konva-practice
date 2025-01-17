@@ -69,6 +69,8 @@ const DropArea = ({
   });
 
   const [inputBox, setInputBox] = useState(null); // 用於追蹤輸入框的位置和文字
+  const [isSelecting, setIsSelecting] = useState(false);
+  const [selectionBox, setSelectionBox] = useState(null); // 當前框選框
 
   // 顯示輸入框
   const showInputBox = (id, x, y, text) => {
@@ -81,9 +83,6 @@ const DropArea = ({
     );
     setInputBox({ id, x, y, text });
   };
-
-  const [isSelecting, setIsSelecting] = useState(false);
-  const [selectionBox, setSelectionBox] = useState(null); // 當前框選框
 
   // 當鼠標按下時觸發，用於開始框選
   const handleMouseDown = (e) => {
@@ -161,10 +160,10 @@ const DropArea = ({
   // 框選完成時，記錄框內的圖片和線條
   const handleSelectionComplete = (box) => {
     // 選取框內的圖片
-    const selectedImages = images.filter((img) => {
-      const imgWidth = 100; // 假設圖片寬度
-      const imgHeight = 100; // 假設圖片高度
+    const imgWidth = 100; // 假設圖片寬度
+    const imgHeight = 100; // 假設圖片高度
 
+    const selectedImages = images.filter((img) => {
       return (
         img.x >= box.x &&
         img.x + imgWidth <= box.x + box.width && // 檢查圖片的右邊是否在框內
@@ -212,16 +211,13 @@ const DropArea = ({
     setSelectionBoxes((prevBoxes) => [
       ...prevBoxes,
       {
+        id: Date.now(),
         ...box,
-        images: selectedImages.length > 0 ? selectedImages : [], // 確保 images 屬性存在
-        lines: selectedLines.length > 0 ? selectedLines : [], // 確保 lines 屬性存在
+        images: selectedImages,
+        lines: selectedLines,
       },
     ]);
   };
-
-  // console.log(lines);
-  // console.log(images);
-  // console.log(selectionBoxes);
 
   // 檢查圖片是否在框框內
   const isImageInBox = (image, box) => {
@@ -235,40 +231,41 @@ const DropArea = ({
     );
   };
 
-  // 更新框框內的圖片和線條
+  // 拖曳圖片結束後，更新框內的圖片和線條
   const updateBoxImagesAndLines = (updatedImage) => {
-    setSelectionBoxes((prevBoxes) =>
-      prevBoxes
-        .map((box) => {
-          const isInBox = isImageInBox(updatedImage, box);
+    setSelectionBoxes(
+      (prevBoxes) =>
+        prevBoxes
+          .map((box) => {
+            const isInBox = isImageInBox(updatedImage, box);
 
-          // 更新框框內的圖片
-          const updatedImages = isInBox
-            ? [
-                ...box.images.filter((img) => img.id !== updatedImage.id),
-                updatedImage,
-              ]
-            : box.images.filter((img) => img.id !== updatedImage.id);
+            // 更新框框內的圖片
+            const updatedImages = isInBox
+              ? [
+                  ...box.images.filter((img) => img.id !== updatedImage.id),
+                  updatedImage,
+                ]
+              : box.images.filter((img) => img.id !== updatedImage.id);
 
-          // 更新框框內的線條
-          const updatedLines = lines.filter((line) => {
-            const isStartInBox = updatedImages.some(
-              (img) => img.id === line.start.id
-            );
-            const isEndInBox = updatedImages.some(
-              (img) => img.id === line.end.id
-            );
+            // 更新框框內的線條
+            const updatedLines = lines.filter((line) => {
+              const isStartInBox = updatedImages.some(
+                (img) => img.id === line.start.id
+              );
+              const isEndInBox = updatedImages.some(
+                (img) => img.id === line.end.id
+              );
 
-            return isStartInBox || isEndInBox;
-          });
+              return isStartInBox || isEndInBox;
+            });
 
-          return {
-            ...box,
-            images: updatedImages,
-            lines: updatedLines,
-          };
-        })
-        .filter((box) => box.images.length > 1)
+            return {
+              ...box,
+              images: updatedImages,
+              lines: updatedLines,
+            };
+          })
+          .filter((box) => box.images.length > 1) // 若框內剩 1 張圖，就刪除該框
     );
   };
 
@@ -290,10 +287,12 @@ const DropArea = ({
       >
         {/* 框選 Layer */}
         <Layer>
+          {/* 當前框框 */}
+          {selectionBox && <CurrentSelectionBox box={selectionBox} />}
           {/* 保存的框框 */}
           {selectionBoxes.map((box, index) => (
             <SelectionBox
-              key={index}
+              key={box.id}
               box={box}
               index={index}
               images={images}
@@ -305,9 +304,6 @@ const DropArea = ({
               isImageInBox={isImageInBox}
             />
           ))}
-
-          {/* 當前框框 */}
-          {selectionBox && <CurrentSelectionBox box={selectionBox} />}
         </Layer>
 
         {/* 線條 Layer */}
@@ -399,6 +395,8 @@ const DropArea = ({
           ))}
         </Layer>
       </Stage>
+
+      {/* 文字輸入框 */}
       {inputBox && (
         <EditableTextField
           inputBox={inputBox}
