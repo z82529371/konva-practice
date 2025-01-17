@@ -12,6 +12,7 @@ const SelectionBox = ({
   selectionBoxes,
   setSelectionBoxes,
   isImageInBox,
+  showInputBox,
 }) => {
   const transformerRef = useRef(null); // 用於操作 Transformer
   const shapeRef = useRef(null); // 用於操作圖形元素
@@ -243,7 +244,14 @@ const SelectionBox = ({
           y={box.y - 36} // 框框上方（負值可以讓 icon 提升到框外）
           width={24}
           height={24}
-          // onClick={handleDelete}
+          onClick={() =>
+            showInputBox(
+              box.id,
+              box.x + box.width / 2, // 水平中心
+              box.y - 40, // 中上方 (稍微往框框上方移動 10px)
+              box.name || ""
+            )
+          }
           onMouseEnter={(e) => {
             setIsTextHovered(true);
             e.target.getStage().container().style.cursor = "pointer";

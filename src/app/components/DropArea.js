@@ -8,6 +8,7 @@ import LineWithTrashIcon from "./LineWithTrashIcon";
 import ImageTextField from "./ImageTextField";
 import SelectionBox from "./SelectionBox";
 import CurrentSelectionBox from "./CurrentSelectionBox";
+import SelectionBoxTextField from "./SelectionBoxTextField";
 import { ItemTypes } from "./ToolItem";
 
 const DropArea = ({
@@ -69,11 +70,12 @@ const DropArea = ({
   });
 
   const [imageInputBox, setImageInputBox] = useState(null); // 用於追蹤輸入框的位置和文字
+  const [selectionBoxInputBox, setSelectionBoxInputBox] = useState(null);
   const [isSelecting, setIsSelecting] = useState(false);
   const [selectionBox, setSelectionBox] = useState(null); // 當前框選框
 
-  // 顯示輸入框
-  const showInputBox = (id, x, y, text) => {
+  // 顯示圖片輸入框
+  const showImageInputBox = (id, x, y, text) => {
     setImages((prevImages) =>
       prevImages.map((img) =>
         img.id === id
@@ -82,6 +84,18 @@ const DropArea = ({
       )
     );
     setImageInputBox({ id, x, y, text });
+  };
+
+  // 顯示框框輸入框
+  const showSelectionBoxInputBox = (id, x, y, text) => {
+    setSelectionBoxes((prevBoxes) =>
+      prevBoxes.map((box) =>
+        box.id === id
+          ? { ...box, isEditing: true }
+          : { ...box, isEditing: false }
+      )
+    );
+    setSelectionBoxInputBox({ id, x, y, text });
   };
 
   // 當鼠標按下時觸發，用於開始框選
@@ -302,6 +316,7 @@ const DropArea = ({
               selectionBoxes={selectionBoxes}
               setSelectionBoxes={setSelectionBoxes}
               isImageInBox={isImageInBox}
+              showInputBox={showSelectionBoxInputBox}
             />
           ))}
         </Layer>
@@ -339,7 +354,7 @@ const DropArea = ({
               isSelected={selectedImage && selectedImage.id === img.id}
               onCancel={handleImageDblClick}
               onDelete={() => handleDeleteImage(img.id)}
-              showInputBox={showInputBox}
+              showInputBox={showImageInputBox}
               isEditing={img.isEditing}
               lightStatus={img.status === "active" ? "red" : "green"} // 動態設置燈的狀態
               onDragMove={(pos) => {
@@ -402,6 +417,15 @@ const DropArea = ({
           inputBox={imageInputBox}
           setInputBox={setImageInputBox}
           setImages={setImages}
+        />
+      )}
+
+      {/* 框框輸入框 */}
+      {selectionBoxInputBox && (
+        <SelectionBoxTextField
+          inputBox={selectionBoxInputBox}
+          setInputBox={setSelectionBoxInputBox}
+          setSelectionBoxes={setSelectionBoxes}
         />
       )}
     </Box>
