@@ -1,5 +1,5 @@
-import React from "react";
-import { Rect } from "react-konva";
+import React, { useRef, useEffect } from "react";
+import { Rect, Transformer } from "react-konva";
 
 const SelectionBox = ({
   box,
@@ -11,6 +11,9 @@ const SelectionBox = ({
   selectionBoxes,
   setSelectionBoxes,
 }) => {
+  const transformerRef = useRef(null); // 用於操作 Transformer
+  const shapeRef = useRef(null); // 用於操作圖形元素
+
   // 當框框拖動時，同步更新框內的圖片和線條
   const handleBoxDrag = (e, boxIndex) => {
     const { x, y } = e.target.position();
@@ -21,12 +24,8 @@ const SelectionBox = ({
     // 當前框框
     const currentBox = selectionBoxes[boxIndex];
     const { width, height } = currentBox;
-    const strokeWidth = 3;
-
-    console.log(stageHeight, stageWidth, box.width, box.height);
 
     const currentImages = currentBox.images || [];
-    const currentLines = currentBox.lines || [];
 
     // 限制框框的拖曳範圍，使其剛好契合畫布邊框
     const newX = Math.max(0, Math.min(x, stageWidth - width));
@@ -100,18 +99,63 @@ const SelectionBox = ({
     setLines(updatedLines);
   };
 
+  // 初始化 Transformer
+  const handleTransformEnd = () => {
+    const node = shapeRef.current;
+    const newWidth = node.width() * node.scaleX(); // 計算新寬度
+    const newHeight = node.height() * node.scaleY(); // 計算新高度
+
+    // 更新框框屬性
+    setSelectionBoxes((prevBoxes) => {
+      // 確保 prevBoxes 為數組
+      if (!Array.isArray(prevBoxes)) return [];
+
+      return prevBoxes.map((b, idx) =>
+        idx === index
+          ? {
+              ...b,
+              x: node.x(),
+              y: node.y(),
+              width: newWidth,
+              height: newHeight,
+            }
+          : b
+      );
+    });
+
+    // 重置縮放比例
+    node.scaleX(1);
+    node.scaleY(1);
+  };
+
+  // 持續將 Transformer 附加到 Rect
+  useEffect(() => {
+    const transformer = transformerRef.current;
+    const shape = shapeRef.current;
+
+    if (transformer && shape) {
+      transformer.nodes([shape]); // 附加 Transformer
+      transformer.getLayer().batchDraw(); // 刷新圖層
+    }
+  }, [box]);
+
   return (
-    <Rect
-      key={index}
-      x={box.x}
-      y={box.y}
-      width={box.width}
-      height={box.height}
-      stroke="#1778ba"
-      strokeWidth={3}
-      draggable
-      onDragMove={(e) => handleBoxDrag(e, index)} // 傳遞拖動事件
-    />
+    <>
+      <Rect
+        ref={shapeRef}
+        key={index}
+        x={box.x}
+        y={box.y}
+        width={box.width}
+        height={box.height}
+        stroke="#1778ba"
+        strokeWidth={3}
+        draggable
+        onDragMove={(e) => handleBoxDrag(e, index)} // 傳遞拖動事件
+        onTransformEnd={handleTransformEnd}
+      />
+      <Transformer ref={transformerRef} />
+    </>
   );
 };
 
