@@ -1,4 +1,3 @@
-// DropArea.js
 import React, { use, useState } from "react";
 import { useDrop } from "react-dnd";
 import { Stage, Layer, Group, Rect, Image, Line } from "react-konva";
@@ -317,6 +316,7 @@ const DropArea = ({
               setSelectionBoxes={setSelectionBoxes}
               isImageInBox={isImageInBox}
               showInputBox={showSelectionBoxInputBox}
+              isEditing={box.isEditing}
             />
           ))}
         </Layer>

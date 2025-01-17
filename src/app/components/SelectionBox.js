@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState } from "react";
-import { Rect, Transformer, Image } from "react-konva";
+import { Rect, Transformer, Image, Text } from "react-konva";
 import useImage from "use-image";
 
 const SelectionBox = ({
@@ -13,6 +13,7 @@ const SelectionBox = ({
   setSelectionBoxes,
   isImageInBox,
   showInputBox,
+  isEditing,
 }) => {
   const transformerRef = useRef(null); // 用於操作 Transformer
   const shapeRef = useRef(null); // 用於操作圖形元素
@@ -248,7 +249,7 @@ const SelectionBox = ({
             showInputBox(
               box.id,
               box.x + box.width / 2, // 水平中心
-              box.y - 40, // 中上方 (稍微往框框上方移動 10px)
+              box.y - 32, // 中上方 (稍微往框框上方移動 10px)
               box.name || ""
             )
           }
@@ -262,6 +263,50 @@ const SelectionBox = ({
           }}
         />
       )}
+
+      {/* 框框上方的文字背景 */}
+      {isHovered &&
+        !isTransforming &&
+        !isDragging &&
+        (box.name || isEditing) && // 如果有名稱或正在編輯中，顯示背景
+        shapeRef.current && (
+          <Rect
+            x={box.x + box.width / 2 - 65}
+            y={box.y - 42}
+            width={130} // 與 Text 的寬度相同
+            height={28} // 根據需要調整高度
+            fill={"#a2c9e3"} // 根據 type 設定顏色
+            stroke={"#01579b"} // 選中時顯示邊框
+            cornerRadius={2}
+          />
+        )}
+
+      {/* 框框上方的文字 */}
+      {isHovered &&
+        !isTransforming &&
+        !isDragging &&
+        !isEditing &&
+        box.name &&
+        shapeRef.current && (
+          <Text
+            x={box.x + box.width / 2 - 65}
+            y={box.y - 34}
+            text={box.name || ""}
+            fontSize={18}
+            fill="black"
+            align="center"
+            width={130}
+            fontFamily="monospace"
+            onDblClick={() =>
+              showInputBox(
+                box.id,
+                box.x + box.width / 2, // 水平中心
+                box.y - 32, // 中上方 (稍微往框框上方移動 10px)
+                box.name || ""
+              )
+            }
+          />
+        )}
 
       {(isHovered || (shapeRef.current && shapeRef.current.isDragging())) && (
         <Transformer

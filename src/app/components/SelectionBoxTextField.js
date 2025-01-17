@@ -35,11 +35,11 @@ const SelectionBoxTextField = ({
       sx={{
         position: "absolute",
         top: inputBox.y - 10, // 偏移框框中心上方
-        left: inputBox.x - 65, // 偏移框框中心左方
+        left: inputBox.x - 66, // 偏移框框中心左方
         width: "132px",
-        height: "20px",
         "& .MuiInputBase-input ": {
-          fontSize: "16px",
+          height: "28px",
+          fontSize: "18px",
           padding: "0.7px 0",
           fontFamily: "monospace",
           textAlign: "center",
