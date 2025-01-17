@@ -123,15 +123,28 @@ const SelectionBox = ({
     } else {
       // 否則更新框框屬性
       setSelectionBoxes((prevBoxes) =>
-        prevBoxes.map((b, idx) =>
-          idx === index
-            ? {
-                ...b,
-                ...newBox,
-              }
-            : b
-        )
+        prevBoxes.map((b, idx) => {
+          if (idx === index) {
+            return {
+              ...b,
+              ...newBox,
+              images: imagesInBox, // 更新框框內的圖片
+            };
+          }
+          return b;
+        })
       );
+
+      const excludedImages = images.filter((img) => !isImageInBox(img, newBox)); // 找出不在框框內的圖片
+      const updatedImages = images.map((img) =>
+        excludedImages.includes(img)
+          ? {
+              ...img,
+              groupId: null,
+            }
+          : img
+      );
+      setImages(updatedImages);
     }
 
     // 重置縮放比例
