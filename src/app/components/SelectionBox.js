@@ -19,7 +19,11 @@ const SelectionBox = ({
   const [isTransforming, setIsTransforming] = useState(false); // 追蹤是否正在縮放
   const [isDragging, setIsDragging] = useState(false); // 追蹤拖動狀態
 
+  const [isTrashHovered, setIsTrashHovered] = useState(false);
+
   const [trashIcon] = useImage("/groupTrashcan.svg"); // 替換為實際的垃圾桶圖示路徑
+  const [trashDarkIcon] = useImage("/groupTrashcandark.svg"); // 替換為實際的垃圾桶圖示路徑
+  
 
   // 當框框拖動時，同步更新框內的圖片和線條
   const handleBoxDrag = (e, boxIndex) => {
@@ -212,16 +216,18 @@ const SelectionBox = ({
       {/* 刪除按鈕 */}
       {isHovered && !isTransforming && !isDragging && shapeRef.current && (
         <Image
-          image={trashIcon}
+          image={isTrashHovered ? trashDarkIcon : trashIcon} // 根據 hover 切換圖片
           x={box.x + box.width - 15} // 框框右邊緣
           y={box.y - 35} // 框框上方（負值可以讓 icon 提升到框外）
           width={20}
           height={20}
           onClick={handleDelete}
           onMouseEnter={(e) => {
+            setIsTrashHovered(true); // 設置垃圾桶 hover 狀態
             e.target.getStage().container().style.cursor = "pointer";
           }}
           onMouseLeave={(e) => {
+            setIsTrashHovered(false); // 取消垃圾桶 hover 狀態
             e.target.getStage().container().style.cursor = "default";
           }}
         />
