@@ -51,7 +51,7 @@ const SelectionBox = ({
               }
             : box
         )
-        .filter((box) => box.images.length > 1 || box.lines.length > 0)
+        .filter((box) => box.images.length > 1)
     );
 
     // 更新圖片位置
