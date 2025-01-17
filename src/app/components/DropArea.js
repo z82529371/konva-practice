@@ -383,7 +383,9 @@ const DropArea = ({
                 // 更新圖片在 state 中的位置
                 setImages((prev) =>
                   prev.map((item) =>
-                    item.id === img.id ? { ...item, ...pos } : item
+                    item.id === img.id
+                      ? { ...item, ...pos, type: img.type }
+                      : item
                   )
                 );
 
