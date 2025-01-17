@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from "react";
+import React, { useRef, useEffect, useState } from "react";
 import { Rect, Transformer } from "react-konva";
 
 const SelectionBox = ({
@@ -14,6 +14,7 @@ const SelectionBox = ({
 }) => {
   const transformerRef = useRef(null); // 用於操作 Transformer
   const shapeRef = useRef(null); // 用於操作圖形元素
+  const [isHovered, setIsHovered] = useState(false); // 追蹤是否 hover
 
   // 當框框拖動時，同步更新框內的圖片和線條
   const handleBoxDrag = (e, boxIndex) => {
@@ -162,7 +163,7 @@ const SelectionBox = ({
       transformer.nodes([shape]); // 附加 Transformer
       transformer.getLayer().batchDraw(); // 刷新圖層
     }
-  }, [box]);
+  }, [box, isHovered]); // 確保 hover 狀態更新時刷新 Transformer
 
   return (
     <>
@@ -174,15 +175,27 @@ const SelectionBox = ({
         width={box.width}
         height={box.height}
         stroke="#1778ba"
+        // hitStrokeWidth={25}
         strokeWidth={3}
         draggable
         onDragMove={(e) => handleBoxDrag(e, index)} // 傳遞拖動事件
         onTransformEnd={handleTransformEnd}
+        onMouseEnter={(e) => {
+          setIsHovered(true); // 設定 hover 狀態
+          e.target.getStage().container().style.cursor = "move"; // 轉為移動型游標
+        }}
+        onMouseLeave={(e) => {
+          e.target.getStage().container().style.cursor = "default"; // 還原游標
+        }}
+        onClick={() => setIsHovered(false)} // 滑鼠離開時
       />
-      <Transformer
-        ref={transformerRef}
-        rotateEnabled={false} // 禁用旋轉
-      />
+      {(isHovered || (shapeRef.current && shapeRef.current.isDragging())) && (
+        <Transformer
+          ref={transformerRef}
+          anchorSize={12}
+          rotateEnabled={false} // 禁用旋轉
+        />
+      )}
     </>
   );
 };
