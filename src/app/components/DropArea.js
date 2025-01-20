@@ -170,6 +170,9 @@ const DropArea = ({
     setSelectionBox(null); // 清除當前框框
   };
 
+  console.log(selectionBoxes);
+  console.log(images);
+
   // 框選完成時，記錄框內的圖片和線條
   const handleSelectionComplete = (box) => {
     // 選取框內的圖片
@@ -184,6 +187,13 @@ const DropArea = ({
         img.y + imgHeight <= box.y + box.height // 檢查圖片的底部是否在框內
       );
     });
+
+    // 過濾出已經屬於其他群組的圖片
+    const imagesAlreadyInGroups = selectedImages.filter((img) => {
+      selectionBoxes.some((b) => b.images.some((i) => i.id === img.id));
+    });
+
+    if (imagesAlreadyInGroups.length > 0) return; // 如果有圖片已屬於其他群組，顯示警告或進行其他處理
 
     // 選取框內的線條
     const selectedLines = lines.filter((line) => {
@@ -246,40 +256,52 @@ const DropArea = ({
 
   // 拖曳圖片結束後，更新框內的圖片和線條
   const updateBoxImagesAndLines = (updatedImage) => {
-    setSelectionBoxes(
-      (prevBoxes) =>
-        prevBoxes
-          .map((box) => {
-            const isInBox = isImageInBox(updatedImage, box);
+    setSelectionBoxes((prevBoxes) => {
+      // 找到圖片原本所屬的群組
+      const originalBox = prevBoxes.find((box) =>
+        box.images.some((img) => img.id === updatedImage.id)
+      );
 
-            // 更新框框內的圖片
-            const updatedImages = isInBox
-              ? [
-                  ...box.images.filter((img) => img.id !== updatedImage.id),
-                  updatedImage,
-                ]
-              : box.images.filter((img) => img.id !== updatedImage.id);
+      return prevBoxes
+        .map((box) => {
+          const isInBox = isImageInBox(updatedImage, box);
 
-            // 更新框框內的線條
-            const updatedLines = lines.filter((line) => {
-              const isStartInBox = updatedImages.some(
-                (img) => img.id === line.start.id
-              );
-              const isEndInBox = updatedImages.some(
-                (img) => img.id === line.end.id
-              );
-
-              return isStartInBox || isEndInBox;
-            });
-
+          // 如果圖片在多個群組中，讓圖片留在原群組中
+          if (isInBox && originalBox && originalBox.id !== box.id) {
             return {
               ...box,
-              images: updatedImages,
-              lines: updatedLines,
+              images: box.images.filter((img) => img.id !== updatedImage.id), // 從新群組中移除圖片
             };
-          })
-          .filter((box) => box.images.length > 1) // 若框內剩 1 張圖，就刪除該框
-    );
+          }
+
+          // 更新框框內的圖片
+          const updatedImages = isInBox
+            ? [
+                ...box.images.filter((img) => img.id !== updatedImage.id),
+                updatedImage,
+              ]
+            : box.images.filter((img) => img.id !== updatedImage.id);
+
+          // 更新框框內的線條
+          const updatedLines = lines.filter((line) => {
+            const isStartInBox = updatedImages.some(
+              (img) => img.id === line.start.id
+            );
+            const isEndInBox = updatedImages.some(
+              (img) => img.id === line.end.id
+            );
+
+            return isStartInBox || isEndInBox;
+          });
+
+          return {
+            ...box,
+            images: updatedImages,
+            lines: updatedLines,
+          };
+        })
+        .filter((box) => box.images.length > 1); // 若框內剩 1 張圖，就刪除該框
+    });
   };
 
   return (
