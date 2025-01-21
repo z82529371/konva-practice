@@ -254,53 +254,113 @@ const DropArea = ({
     );
   };
 
-  // 拖曳圖片結束後，更新框內的圖片和線條
+  // 判斷兩個選取框 (box1, box2) 是否重疊
+  const boxesOverLap = (box1, box2) => {
+    return !(
+      box2.x > box1.x + box1.width || // box2 在 box1 的右側
+      box2.x + box2.width < box1.x || // box2 在 box1 的左側
+      box2.y > box1.y + box1.height || // box2 在 box1 的下方
+      box2.y + box2.height < box1.y
+    );
+  };
+
+  // 工具函數：更新群組內的圖片與線條
+  const updateBoxImagesAndLinesData = (box, updatedImage) => {
+    const updatedImages = [
+      ...box.images.filter((img) => img.id !== updatedImage.id),
+      updatedImage,
+    ];
+    return {
+      ...box,
+      images: updatedImages,
+      lines: box.lines.filter((line) => {
+        const isStartInUpdated = updatedImages.some(
+          (img) => img.id === line.start.id
+        );
+        const isEndInUpdated = updatedImages.some(
+          (img) => img.id === line.end.id
+        );
+        return !isStartInUpdated || !isEndInUpdated;
+      }),
+    };
+  };
+
+  // 更新群組內的圖片與線條
   const updateBoxImagesAndLines = (updatedImage) => {
     setSelectionBoxes((prevBoxes) => {
-      // 找到圖片原本所屬的群組
+      // 找到圖片原本所在的群組
       const originalBox = prevBoxes.find((box) =>
         box.images.some((img) => img.id === updatedImage.id)
       );
 
-      return prevBoxes
-        .map((box) => {
-          const isInBox = isImageInBox(updatedImage, box);
+      // 記錄圖片是否移動到新群組
+      let targetBoxId = null;
 
-          // 如果圖片在多個群組中，讓圖片留在原群組中
-          if (isInBox && originalBox && originalBox.id !== box.id) {
-            return {
-              ...box,
-              images: box.images.filter((img) => img.id !== updatedImage.id), // 從新群組中移除圖片
-            };
+      // 處理「圖片是否進入新群組」的邏輯
+      const newBoxes = prevBoxes.map((box) => {
+        const isInThisBox = isImageInBox(updatedImage, box); // 拖曳後是否在這個 box 裡
+        const isOriginalBox = box === originalBox; // 是否為原群組
+
+        if (!isInThisBox) return box; // 不在這群組範圍，直接返回
+
+        // 處理圖片進入群組的情況
+        if (originalBox && originalBox.id !== box.id) {
+          // A. 檢查是否與原群組重疊
+          if (boxesOverLap(originalBox, box)) {
+            const stillInOriginal = isImageInBox(updatedImage, originalBox);
+            if (stillInOriginal) {
+              // 仍在原群組範圍 => 從新群組移除圖片
+              return {
+                ...box,
+                images: box.images.filter((img) => img.id !== updatedImage.id),
+              };
+            } else {
+              // 已脫離原群組範圍 => 移入新群組
+              targetBoxId = box.id;
+              return updateBoxImagesAndLinesData(box, updatedImage);
+            }
+          } else {
+            // B. 無重疊 => 直接進入新群組
+            targetBoxId = box.id;
+            return updateBoxImagesAndLinesData(box, updatedImage);
           }
+        } else {
+          // 原群組或未找到 originalBox => 更新圖片位置
+          return updateBoxImagesAndLinesData(box, updatedImage);
+        }
+      });
 
-          // 更新框框內的圖片
-          const updatedImages = isInBox
-            ? [
-                ...box.images.filter((img) => img.id !== updatedImage.id),
-                updatedImage,
-              ]
-            : box.images.filter((img) => img.id !== updatedImage.id);
-
-          // 更新框框內的線條
-          const updatedLines = lines.filter((line) => {
-            const isStartInBox = updatedImages.some(
-              (img) => img.id === line.start.id
-            );
-            const isEndInBox = updatedImages.some(
-              (img) => img.id === line.end.id
-            );
-
-            return isStartInBox || isEndInBox;
-          });
-
+      // 若圖片進入新群組，從原群組移除
+      let finalBoxes = newBoxes.map((box) => {
+        if (targetBoxId && box === originalBox && box) {
+          // 把圖片自原群組移除
           return {
             ...box,
-            images: updatedImages,
-            lines: updatedLines,
+            images: box.images.filter((img) => img.id !== updatedImage.id),
           };
-        })
-        .filter((box) => box.images.length > 1); // 若框內剩 1 張圖，就刪除該框
+        }
+        return box;
+      });
+
+      // 若圖片拖到空白處，從原群組移除
+      if (!targetBoxId && originalBox) {
+        const stillInOriginal = isImageInBox(updatedImage, originalBox);
+        if (!stillInOriginal) {
+          // 把圖片自原群組刪除
+          finalBoxes = finalBoxes.map((box) => {
+            if (box === originalBox) {
+              return {
+                ...box,
+                images: box.images.filter((img) => img.id !== updatedImage.id),
+              };
+            }
+            return box;
+          });
+        }
+      }
+
+      // 過濾掉只剩一張或空群組
+      return finalBoxes.filter((box) => box.images.length > 1);
     });
   };
 
