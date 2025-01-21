@@ -35,6 +35,11 @@ const DraggableImageButton = ({
   const [closeIcon] = useImage("/close.svg"); // 替換為實際的關閉圖示路徑
   const [closeDarkIcon] = useImage("/closeDark.svg");
 
+  // 設置滑鼠游標
+  const setCursorStyle = (stage, style) => {
+    stage.container().style.cursor = style;
+  };
+
   return (
     <>
       <Group
@@ -88,13 +93,11 @@ const DraggableImageButton = ({
           height={100}
           onMouseEnter={(e) => {
             setHover(true);
-            const stage = e.target.getStage();
-            stage.container().style.cursor = "pointer"; // 設定鼠標為手形
+            setCursorStyle(e.target.getStage(), "pointer");
           }}
           onMouseLeave={(e) => {
             setHover(false);
-            const stage = e.target.getStage();
-            stage.container().style.cursor = "default"; // 恢復默認鼠標
+            setCursorStyle(e.target.getStage(), "default");
           }}
         />
         {/* 選中狀態的 X 按鈕 */}
@@ -113,13 +116,11 @@ const DraggableImageButton = ({
             }}
             onMouseEnter={(e) => {
               setIsCloseHovered(true);
-              const stage = e.target.getStage();
-              stage.container().style.cursor = "pointer";
+              setCursorStyle(e.target.getStage(), "pointer");
             }}
             onMouseLeave={(e) => {
               setIsCloseHovered(false);
-              const stage = e.target.getStage();
-              stage.container().style.cursor = "default";
+              setCursorStyle(e.target.getStage(), "default");
             }}
           />
         )}
@@ -136,37 +137,24 @@ const DraggableImageButton = ({
             }}
             onMouseEnter={(e) => {
               setIsTrashHovered(true);
-              const stage = e.target.getStage();
-              stage.container().style.cursor = "pointer";
+              setCursorStyle(e.target.getStage(), "pointer");
             }}
             onMouseLeave={(e) => {
               setIsTrashHovered(false);
-              const stage = e.target.getStage();
-              stage.container().style.cursor = "default";
+              setCursorStyle(e.target.getStage(), "default");
             }}
           />
         )}
         {/* 右上角的紅燈 / 綠燈 */}
-        {lightStatus === "red" && (
-          <Circle
-            x={109} // 圖片右上角
-            y={-4}
-            radius={8}
-            stroke={"#991B1B"}
-            strokeWidth={2}
-            fill="#EF4444"
-          />
-        )}
-        {lightStatus === "green" && (
-          <Circle
-            x={109} // 圖片右上角
-            y={-4}
-            radius={8}
-            stroke={"#15803D"}
-            strokeWidth={2}
-            fill="#22C55E"
-          />
-        )}
+        <Circle
+          x={109} // 圖片右上角
+          y={-4}
+          radius={8}
+          stroke={lightStatus === "red" ? "#991B1B" : "#15803D"}
+          strokeWidth={2}
+          fill={lightStatus === "red" ? "#EE4444" : "#22C55E"}
+        />
+
         {/* 圖片下方的文字背景 */}
         <Rect
           x={-10}
