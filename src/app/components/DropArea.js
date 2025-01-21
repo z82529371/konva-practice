@@ -46,7 +46,6 @@ const DropArea = ({
         .container()
         .getBoundingClientRect();
 
-      // containerRect.left、containerRect.top 為 Stage 容器在視窗左上角的像素位置
       // 計算滑鼠在 Stage 裡的相對座標
       const pointerPosition = {
         x: clientOffset.x - containerRect.left,
@@ -73,28 +72,43 @@ const DropArea = ({
   const [isSelecting, setIsSelecting] = useState(false);
   const [selectionBox, setSelectionBox] = useState(null); // 當前框選框
 
+  const imgWidth = 100; // 假設圖片寬度為 100
+  const imgHeight = 100; // 假設圖片高度為 100
+
   // 顯示圖片輸入框
   const showImageInputBox = (id, x, y, text) => {
-    setImages((prevImages) =>
-      prevImages.map((img) =>
-        img.id === id
-          ? { ...img, isEditing: true }
-          : { ...img, isEditing: false }
-      )
+    setImages((prev) =>
+      prev.map((img) => ({ ...img, isEditing: img.id === id }))
     );
     setImageInputBox({ id, x, y, text });
   };
 
   // 顯示框框輸入框
   const showSelectionBoxInputBox = (id, x, y, text) => {
-    setSelectionBoxes((prevBoxes) =>
-      prevBoxes.map((box) =>
-        box.id === id
-          ? { ...box, isEditing: true }
-          : { ...box, isEditing: false }
-      )
+    setSelectionBoxes((prev) =>
+      prev.map((box) => ({ ...box, isEditing: box.id === id }))
     );
     setSelectionBoxInputBox({ id, x, y, text });
+  };
+
+  // 檢查物件是否在框內
+  const isItemInBox = (item, box, width, height) => {
+    return (
+      item.x >= box.x &&
+      item.x + width <= box.x + box.width &&
+      item.y >= box.y &&
+      item.y + height <= box.y + box.height
+    );
+  };
+
+  // 檢查點是否在框內
+  const isPointInBox = (point, box) => {
+    return (
+      point.x >= box.x &&
+      point.x <= box.x + box.width &&
+      point.y >= box.y &&
+      point.y <= box.y + box.height
+    );
   };
 
   // 當鼠標按下時觸發，用於開始框選
@@ -103,27 +117,19 @@ const DropArea = ({
     const pointerPosition = stage.getPointerPosition();
 
     // 判斷是否點擊到圖片
-    const clickedOnImage = images.some((img) => {
-      const imgWidth = 100; // 假設圖片寬度為 100
-      const imgHeight = 100; // 假設圖片高度為 100
-
-      return (
-        pointerPosition.x >= img.x &&
-        pointerPosition.x <= img.x + imgWidth &&
-        pointerPosition.y >= img.y &&
-        pointerPosition.y <= img.y + imgHeight
-      );
-    });
+    const clickedOnImage = images.some((img) =>
+      isPointInBox(pointerPosition, {
+        x: img.x,
+        y: img.y,
+        width: imgWidth,
+        height: imgHeight,
+      })
+    );
 
     // 檢查是否點擊到框框
-    const clickedOnBox = selectionBoxes.some((box) => {
-      return (
-        pointerPosition.x >= box.x &&
-        pointerPosition.x <= box.x + box.width &&
-        pointerPosition.y >= box.y &&
-        pointerPosition.y <= box.y + box.height
-      );
-    });
+    const clickedOnBox = selectionBoxes.some((box) =>
+      isPointInBox(pointerPosition, box)
+    );
 
     // 如果點擊到圖片或框框，取消框選
     if (clickedOnImage || clickedOnBox) return;
@@ -170,23 +176,11 @@ const DropArea = ({
     setSelectionBox(null); // 清除當前框框
   };
 
-  console.log(selectionBoxes);
-  console.log(images);
-
   // 框選完成時，記錄框內的圖片和線條
   const handleSelectionComplete = (box) => {
     // 選取框內的圖片
-    const imgWidth = 100; // 假設圖片寬度
-    const imgHeight = 100; // 假設圖片高度
-
-    // 選取框內的圖片
     const selectedImages = images.filter((img) => {
-      return (
-        img.x >= box.x &&
-        img.x + imgWidth <= box.x + box.width && // 檢查圖片的右邊是否在框內
-        img.y >= box.y &&
-        img.y + imgHeight <= box.y + box.height // 檢查圖片的底部是否在框內
-      );
+      return isItemInBox(img, box, imgWidth, imgHeight);
     });
 
     // 過濾掉已屬於其他群組的圖片
@@ -199,17 +193,8 @@ const DropArea = ({
 
     // 選取框內的線條
     const selectedLines = lines.filter((line) => {
-      const startInBox =
-        line.start.x >= box.x &&
-        line.start.x <= box.x + box.width &&
-        line.start.y >= box.y &&
-        line.start.y <= box.y + box.height;
-
-      const endInBox =
-        line.end.x >= box.x &&
-        line.end.x <= box.x + box.width &&
-        line.end.y >= box.y &&
-        line.end.y <= box.y + box.height;
+      const startInBox = isPointInBox(line.start, box);
+      const endInBox = isPointInBox(line.end, box);
 
       return (
         startInBox &&
@@ -239,18 +224,6 @@ const DropArea = ({
         lines: selectedLines,
       },
     ]);
-  };
-
-  // 檢查圖片是否在框框內
-  const isImageInBox = (image, box) => {
-    const imgWidth = 100; // 假設圖片寬度為 100
-    const imgHeight = 100; // 假設圖片高度為 100
-    return (
-      image.x >= box.x &&
-      image.x + imgWidth <= box.x + box.width &&
-      image.y >= box.y &&
-      image.y + imgHeight <= box.y + box.height
-    );
   };
 
   // 判斷兩個選取框 (box1, box2) 是否重疊
@@ -284,6 +257,14 @@ const DropArea = ({
     };
   };
 
+  // 工具函數：從群組中移除圖片
+  const removeImageFromBox = (box, imageId) => {
+    return {
+      ...box,
+      images: box.images.filter((img) => img.id !== imageId),
+    };
+  };
+
   // 更新群組內的圖片與線條
   const updateBoxImagesAndLines = (updatedImage) => {
     setSelectionBoxes((prevBoxes) => {
@@ -297,8 +278,7 @@ const DropArea = ({
 
       // 處理「圖片是否進入新群組」的邏輯
       const newBoxes = prevBoxes.map((box) => {
-        const isInThisBox = isImageInBox(updatedImage, box); // 拖曳後是否在這個 box 裡
-        const isOriginalBox = box === originalBox; // 是否為原群組
+        const isInThisBox = isItemInBox(updatedImage, box, imgWidth, imgHeight); // 拖曳後是否在這個 box 裡
 
         if (!isInThisBox) return box; // 不在這群組範圍，直接返回
 
@@ -306,13 +286,15 @@ const DropArea = ({
         if (originalBox && originalBox.id !== box.id) {
           // A. 檢查是否與原群組重疊
           if (boxesOverLap(originalBox, box)) {
-            const stillInOriginal = isImageInBox(updatedImage, originalBox);
+            const stillInOriginal = isItemInBox(
+              updatedImage,
+              originalBox,
+              imgWidth,
+              imgHeight
+            );
             if (stillInOriginal) {
               // 仍在原群組範圍 => 從新群組移除圖片
-              return {
-                ...box,
-                images: box.images.filter((img) => img.id !== updatedImage.id),
-              };
+              return removeImageFromBox(box, updatedImage.id);
             } else {
               // 已脫離原群組範圍 => 移入新群組
               targetBoxId = box.id;
@@ -333,25 +315,24 @@ const DropArea = ({
       let finalBoxes = newBoxes.map((box) => {
         if (targetBoxId && box === originalBox && box) {
           // 把圖片自原群組移除
-          return {
-            ...box,
-            images: box.images.filter((img) => img.id !== updatedImage.id),
-          };
+          return removeImageFromBox(box, updatedImage.id);
         }
         return box;
       });
 
       // 若圖片拖到空白處，從原群組移除
       if (!targetBoxId && originalBox) {
-        const stillInOriginal = isImageInBox(updatedImage, originalBox);
+        const stillInOriginal = isItemInBox(
+          updatedImage,
+          originalBox,
+          imgWidth,
+          imgHeight
+        );
         if (!stillInOriginal) {
           // 把圖片自原群組刪除
           finalBoxes = finalBoxes.map((box) => {
             if (box === originalBox) {
-              return {
-                ...box,
-                images: box.images.filter((img) => img.id !== updatedImage.id),
-              };
+              return removeImageFromBox(box, updatedImage.id);
             }
             return box;
           });
@@ -405,7 +386,7 @@ const DropArea = ({
               setLines={setLines}
               selectionBoxes={selectionBoxes}
               setSelectionBoxes={setSelectionBoxes}
-              isImageInBox={isImageInBox}
+              isImageInBox={isItemInBox}
               showInputBox={showSelectionBoxInputBox}
               isEditing={box.isEditing}
             />
@@ -433,20 +414,12 @@ const DropArea = ({
           {images.map((img) => (
             <DraggableImageButton
               key={img.id}
-              id={img.id}
-              x={img.x}
-              y={img.y}
-              src={img.src}
-              type={img.type}
-              hoverSrc={img.hoverSrc}
-              selectedSrc={img.selectedSrc}
-              name={img.name}
+              {...img}
               stageRef={stageRef}
               isSelected={selectedImage && selectedImage.id === img.id}
               onCancel={handleImageDblClick}
               onDelete={() => handleDeleteImage(img.id)}
               showInputBox={showImageInputBox}
-              isEditing={img.isEditing}
               lightStatus={img.status === "active" ? "red" : "green"} // 動態設置燈的狀態
               onDragMove={(pos) => {
                 // 更新圖片在 state 中的位置

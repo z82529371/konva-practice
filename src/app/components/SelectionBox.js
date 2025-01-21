@@ -28,6 +28,9 @@ const SelectionBox = ({
   const [textIcon] = useImage("/letterT.svg"); // 替換為實際的垃圾桶圖示路徑
   const [textDarkIcon] = useImage("/letterTdark.svg"); // 替換為實際的垃圾桶圖示路徑
 
+  const imgWidth = 100;
+  const imgHeight = 100;
+
   // 當框框拖動時，同步更新框內的圖片和線條
   const handleBoxDrag = (e, boxIndex) => {
     const { x, y } = e.target.position();
@@ -139,7 +142,9 @@ const SelectionBox = ({
     };
 
     // 找出框框內的圖片
-    const imagesInBox = images.filter((img) => isImageInBox(img, newBox));
+    const imagesInBox = images.filter((img) =>
+      isImageInBox(img, newBox, imgWidth, imgHeight)
+    );
 
     if (imagesInBox.length <= 1) {
       // 如果框框內圖片數量不足，移除該框框
