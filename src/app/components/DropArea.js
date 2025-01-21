@@ -179,6 +179,7 @@ const DropArea = ({
     const imgWidth = 100; // 假設圖片寬度
     const imgHeight = 100; // 假設圖片高度
 
+    // 選取框內的圖片
     const selectedImages = images.filter((img) => {
       return (
         img.x >= box.x &&
@@ -188,12 +189,13 @@ const DropArea = ({
       );
     });
 
-    // 過濾出已經屬於其他群組的圖片
-    const imagesAlreadyInGroups = selectedImages.filter((img) => {
-      selectionBoxes.some((b) => b.images.some((i) => i.id === img.id));
-    });
+    // 過濾掉已屬於其他群組的圖片
+    const filteredImages = selectedImages.filter(
+      (img) =>
+        !selectionBoxes.some((b) => b.images.some((i) => i.id === img.id))
+    );
 
-    if (imagesAlreadyInGroups.length > 0) return; // 如果有圖片已屬於其他群組，顯示警告或進行其他處理
+    if (filteredImages.length < 2) return; // 如果過濾後圖片少於 2 張，直接返回
 
     // 選取框內的線條
     const selectedLines = lines.filter((line) => {
@@ -212,13 +214,10 @@ const DropArea = ({
       return (
         startInBox &&
         endInBox &&
-        (selectedImages.some((img) => img.id === line.start.id) ||
-          selectedImages.some((img) => img.id === line.end.id))
+        (filteredImages.some((img) => img.id === line.start.id) ||
+          filteredImages.some((img) => img.id === line.end.id))
       );
     });
-
-    // 如果沒有選中任何圖片或線條，直接返回
-    if (selectedImages.length < 2) return;
 
     // 檢查是否已經存在相同的框框
     const isDuplicate = selectionBoxes.some(
@@ -236,7 +235,7 @@ const DropArea = ({
       {
         id: Date.now(),
         ...box,
-        images: selectedImages,
+        images: filteredImages,
         lines: selectedLines,
       },
     ]);
