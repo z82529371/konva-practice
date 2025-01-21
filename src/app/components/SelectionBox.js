@@ -58,17 +58,10 @@ const SelectionBox = ({
 
     // 更新框框位置
     setSelectionBoxes((prevBoxes) =>
-      prevBoxes
-        .map((box, index) =>
-          index === boxIndex
-            ? {
-                ...box,
-                x: newX,
-                y: newY,
-              }
-            : box
-        )
-        .filter((box) => box.images.length > 1)
+      updateBoxes(prevBoxes, (box, idx) => idx === index, {
+        x: newX,
+        y: newY,
+      }).filter((box) => box.images.length > 1)
     );
 
     // 更新圖片位置
@@ -148,15 +141,14 @@ const SelectionBox = ({
 
     if (imagesInBox.length <= 1) {
       // 如果框框內圖片數量不足，移除該框框
-      setSelectionBoxes((prevBoxes) =>
-        prevBoxes.filter((_, idx) => idx !== index)
-      );
+      setSelectionBoxes((prevBoxes) => deleteBoxByIndex(prevBoxes, index));
     } else {
       // 更新框框屬性，包含新位置與框框內圖片
       setSelectionBoxes((prevBoxes) =>
-        prevBoxes.map((b, idx) =>
-          idx === index ? { ...b, ...newBox, images: imagesInBox } : b
-        )
+        updateBoxes(prevBoxes, (box, idx) => idx === index, {
+          ...newBox,
+          images: imagesInBox,
+        })
       );
 
       // 更新不在框框內的圖片屬性，將 groupId 設為 null
@@ -173,9 +165,7 @@ const SelectionBox = ({
 
   // 刪除框框
   const handleDelete = () => {
-    setSelectionBoxes((prevBoxes) =>
-      prevBoxes.filter((_, idx) => idx !== index)
-    );
+    setSelectionBoxes((prevBoxes) => deleteBoxByIndex(prevBoxes, index));
   };
 
   // 持續將 Transformer 附加到 Rect
@@ -188,6 +178,28 @@ const SelectionBox = ({
       transformer.getLayer().batchDraw(); // 刷新圖層
     }
   }, [box, box.isHovered]); // 確保 hover 狀態更新時刷新 Transformer
+
+  // 設置滑鼠游標
+  const setCursor = (e, cursorType) => {
+    e.target.getStage().container().style.cursor = cursorType;
+  };
+
+  // 設置 hover 狀態
+  const handleHoverState = (setState, state, cursorType) => (e) => {
+    setState(state);
+    setCursor(e, cursorType);
+  };
+
+  // 通過傳入篩選函數來刪除框框
+  const deleteBoxByIndex = (boxes, index) =>
+    boxes.filter((_, idx) => idx !== index);
+
+  // 通過傳入篩選函數來更新框框
+  const updateBoxes = (boxes, conditionFn, updatedAttributes) => {
+    return boxes.map((box, idx) =>
+      conditionFn(box, idx) ? { ...box, ...updatedAttributes } : box
+    );
+  };
 
   return (
     <>
@@ -213,20 +225,18 @@ const SelectionBox = ({
         }}
         onMouseEnter={(e) => {
           setSelectionBoxes((prevBoxes) =>
-            prevBoxes.map((b, i) =>
-              i === index ? { ...b, isHovered: true } : b
-            )
+            updateBoxes(prevBoxes, (box, idx) => idx === index, {
+              isHovered: true,
+            })
           );
-          e.target.getStage().container().style.cursor = "move"; // 轉為移動型游標
+          setCursor(e, "move");
         }}
-        onMouseLeave={(e) => {
-          e.target.getStage().container().style.cursor = "default"; // 還原游標
-        }}
+        onMouseLeave={(e) => setCursor(e, "default")}
         onClick={() => {
           setSelectionBoxes((prevBoxes) =>
-            prevBoxes.map((b, i) =>
-              i === index ? { ...b, isHovered: false } : b
-            )
+            updateBoxes(prevBoxes, (box, idx) => idx === index, {
+              isHovered: false,
+            })
           );
         }} // 滑鼠離開時
       />
@@ -240,14 +250,8 @@ const SelectionBox = ({
           width={20}
           height={20}
           onClick={handleDelete}
-          onMouseEnter={(e) => {
-            setIsTrashHovered(true); // 設置垃圾桶 hover 狀態
-            e.target.getStage().container().style.cursor = "pointer";
-          }}
-          onMouseLeave={(e) => {
-            setIsTrashHovered(false); // 取消垃圾桶 hover 狀態
-            e.target.getStage().container().style.cursor = "default";
-          }}
+          onMouseEnter={handleHoverState(setIsTrashHovered, true, "pointer")}
+          onMouseLeave={handleHoverState(setIsTextHovered, false, "default")}
         />
       )}
 
@@ -267,14 +271,8 @@ const SelectionBox = ({
               box.name || ""
             )
           }
-          onMouseEnter={(e) => {
-            setIsTextHovered(true);
-            e.target.getStage().container().style.cursor = "pointer";
-          }}
-          onMouseLeave={(e) => {
-            setIsTextHovered(false);
-            e.target.getStage().container().style.cursor = "default";
-          }}
+          onMouseEnter={handleHoverState(setIsTextHovered, true, "pointer")}
+          onMouseLeave={handleHoverState(setIsTextHovered, false, "default")}
         />
       )}
 
