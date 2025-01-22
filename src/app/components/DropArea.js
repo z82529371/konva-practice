@@ -1,4 +1,4 @@
-import React, { use, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useDrop } from "react-dnd";
 import { Stage, Layer, Group, Rect, Image, Line } from "react-konva";
 import { Box } from "@mui/material";
@@ -30,6 +30,14 @@ const DropArea = ({
   calculateLinePoints,
   handleDeleteImage,
 }) => {
+  // 在 isGroupMode 改變時更新游標樣式
+  useEffect(() => {
+    const stage = stageRef.current?.getStage();
+    if (stage) {
+      stage.container().style.cursor = isGroupMode ? "crosshair" : "default";
+    }
+  }, [isGroupMode, stageRef]);
+
   // useDrop: 接收來自 ToolItem (type=TOOL) 的物件
   const [{ isOver }, dropRef] = useDrop({
     accept: ItemTypes.TOOL,
