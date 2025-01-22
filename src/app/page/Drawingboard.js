@@ -246,6 +246,7 @@ function App() {
             hoverSrc="/ddlight.svg"
             selectedSrc="/dddark.svg"
             previewSrc="/ddpreview.png"
+            iconType="image"
             type="dd"
             label="DD"
           />
@@ -254,9 +255,25 @@ function App() {
             hoverSrc="/netWorkerlight.svg"
             selectedSrc="/netWorkerdark.svg"
             previewSrc="/netWorkerpreview.png"
+            iconType="image"
             type="netWorker"
             label="NetWorker"
           />
+          <Box display="flex" alignItems="center">
+            <ToolItem
+              src="/line.svg"
+              type="line"
+              label="Line"
+              iconType="tool"
+              // onClick={addLine} // 點擊後新增線條
+            />
+            <ToolItem
+              src="/group.svg"
+              type="group"
+              iconType="tool"
+              label="Group"
+            />
+          </Box>
         </Box>
 
         {/* Konva 畫布區域（DropArea） */}
