@@ -79,57 +79,12 @@ function DrawingBoard() {
   const blueBase = chroma("#01579b");
   const purpleBase = chroma("#6a1b9a");
 
-  // 點擊圖片：若已選圖片，則連線；否則標記選中
+  // 點擊圖片：僅用於標記或取消選中
   const handleImageClick = (image) => {
-    if (selectedImage) {
-      // 選到同一張 or 已連線過，就略過
-      if (
-        selectedImage.id === image.id ||
-        isAlreadyConnected(selectedImage, image)
-      ) {
-        return;
-      }
-
-      // 計算目前的連線數
-      const ddLinesCount = lines.filter(
-        (line) => line.start.type === "dd" && line.end.type === "dd"
-      ).length;
-      const ddToNetWorkerCount = lines.filter(
-        (line) =>
-          (line.start.type === "dd" && line.end.type === "netWorker") ||
-          (line.start.type === "netWorker" && line.end.type === "dd")
-      ).length;
-
-      let color = "black";
-
-      if (selectedImage.type === "dd" && image.type === "dd") {
-        color = greenBase
-          .saturate(ddLinesCount * 0.5)
-          .brighten(ddLinesCount * 0.2)
-          .hex();
-      } else if (
-        (selectedImage.type === "dd" && image.type === "netWorker") ||
-        (selectedImage.type === "netWorker" && image.type === "dd")
-      ) {
-        color = blueBase
-          .saturate(ddToNetWorkerCount * 0.5)
-          .brighten(ddToNetWorkerCount * 0.2)
-          .hex();
-      } else {
-        // 這裡當作其他類型都用紫色
-        color = purpleBase
-          .saturate(ddLinesCount * 0.5)
-          .brighten(ddLinesCount * 0.2)
-          .hex();
-      }
-
-      setLines((prev) => [
-        ...prev,
-        { start: selectedImage, end: image, color, isStraight: false },
-      ]);
-      setSelectedImage(null);
+    if (selectedImage && selectedImage.id === image.id) {
+      setSelectedImage(null); // 取消選中
     } else {
-      setSelectedImage(image);
+      setSelectedImage(image); // 選中新圖片
     }
   };
 
