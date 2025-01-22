@@ -21,6 +21,8 @@ const DropArea = ({
   setSelectedImage,
   selectionBoxes,
   setSelectionBoxes,
+  isGroupMode,
+  setIsGroupMode,
   addImage,
   handleImageClick,
   handleLineClick,
@@ -116,6 +118,8 @@ const DropArea = ({
 
   // 當鼠標按下時觸發，用於開始框選
   const handleMouseDown = (e) => {
+    if (!isGroupMode) return;
+
     const stage = stageRef.current.getStage();
     const pointerPosition = stage.getPointerPosition();
 
@@ -177,6 +181,7 @@ const DropArea = ({
     handleSelectionComplete(box);
 
     setSelectionBox(null); // 清除當前框框
+    setIsGroupMode(false); // 結束框框設置模式
   };
 
   // 框選完成時，記錄框內的圖片和線條

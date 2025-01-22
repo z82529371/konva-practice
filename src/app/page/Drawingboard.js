@@ -38,6 +38,8 @@ function DrawingBoard() {
 
   const [selectionBoxes, setSelectionBoxes] = useState([]); // 新增框框狀態
 
+  const [isGroupMode, setIsGroupMode] = useState(false);
+
   // console.log(images);
   // console.log(lines);
 
@@ -272,6 +274,7 @@ function DrawingBoard() {
               type="group"
               iconType="tool"
               label="Group"
+              onClick={() => setIsGroupMode(true)}
             />
           </Box>
         </Box>
@@ -288,6 +291,8 @@ function DrawingBoard() {
           selectionBoxes={selectionBoxes}
           setSelectedImage={setSelectedImage}
           setSelectionBoxes={setSelectionBoxes}
+          isGroupMode={isGroupMode}
+          setIsGroupMode={setIsGroupMode}
           addImage={addImage}
           handleImageClick={handleImageClick}
           handleLineClick={handleLineClick}
