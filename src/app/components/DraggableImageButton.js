@@ -113,6 +113,7 @@ const DraggableImageButton = ({
               e.cancelBubble = true;
               onCancel();
               setIsCloseHovered(false);
+              setCursorStyle(e.target.getStage(), "default");
             }}
             onMouseEnter={(e) => {
               setIsCloseHovered(true);
@@ -134,6 +135,7 @@ const DraggableImageButton = ({
             onClick={(e) => {
               e.cancelBubble = true;
               onDelete();
+              setCursorStyle(e.target.getStage(), "default");
             }}
             onMouseEnter={(e) => {
               setIsTrashHovered(true);

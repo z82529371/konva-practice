@@ -159,8 +159,9 @@ const SelectionBox = ({
   };
 
   // 刪除框框
-  const handleDelete = () => {
+  const handleDelete = (e) => {
     setSelectionBoxes((prevBoxes) => deleteBoxByIndex(prevBoxes, index));
+    e.target.getStage().container().style.cursor = "default";
   };
 
   // 持續將 Transformer 附加到 Rect
@@ -244,7 +245,7 @@ const SelectionBox = ({
           y={box.y - 35} // 框框上方（負值可以讓 icon 提升到框外）
           width={20}
           height={20}
-          onClick={handleDelete}
+          onClick={(e) => handleDelete(e)}
           onMouseEnter={handleHoverState(setIsTrashHovered, true, "pointer")}
           onMouseLeave={handleHoverState(setIsTextHovered, false, "default")}
         />

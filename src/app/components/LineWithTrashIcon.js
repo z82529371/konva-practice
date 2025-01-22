@@ -83,6 +83,8 @@ const LineWithTrashIcon = ({
             onClick={(e) => {
               e.cancelBubble = true; // 阻止冒泡
               handleDeleteLine(index);
+              const stage = e.target.getStage();
+              stage.container().style.cursor = "default";
             }}
             onMouseEnter={(e) => {
               setIsTrashHovered(true);
