@@ -32,6 +32,8 @@ const ToolItem = ({
       };
     },
 
+    canDrag: iconType === "image", // 限制拖曳條件
+
     collect: (monitor) => ({
       isDragging: monitor.isDragging(),
     }),
@@ -39,10 +41,12 @@ const ToolItem = ({
 
   return (
     <>
-      <DragPreviewImage connect={preview} src={previewSrc} />
+      {iconType === "image" && (
+        <DragPreviewImage connect={preview} src={previewSrc} />
+      )}
 
       <Box
-        ref={dragRef}
+        ref={iconType === "image" ? dragRef : null} // 僅對 `image` 類型綁定拖曳
         sx={{
           width: iconType === "tool" ? 45 : 100,
           height: iconType === "tool" ? 50 : 100,
@@ -59,7 +63,12 @@ const ToolItem = ({
         onClick={iconType === "tool" ? onClick : null} // 僅工具類型綁定點擊事件
       >
         {/* 圖示預覽 */}
-        <img src={src} alt={label} width={100} height={100} />
+        <img
+          src={src}
+          alt={label}
+          width={iconType === "tool" ? 50 : 100}
+          height={iconType === "tool" ? 50 : 100}
+        />
       </Box>
     </>
   );

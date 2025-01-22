@@ -33,6 +33,9 @@ const DropArea = ({
     accept: ItemTypes.TOOL,
     drop: (item, monitor) => {
       // item 就是 ToolItem.js 用 useDrag 傳過來的 { src, hoverSrc, selectedSrc, type }
+
+      if (item.iconType === "tool") return;
+
       const didDrop = monitor.didDrop();
       if (didDrop) return; // 避免多重 drop
 
