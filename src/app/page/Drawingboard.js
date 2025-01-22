@@ -8,7 +8,7 @@ import ToolItem from "../components/ToolItem";
 import DropArea from "../components/DropArea";
 import chroma from "chroma-js";
 
-function App() {
+function DrawingBoard() {
   const stageRef = useRef(null);
 
   // 工具欄寬度
@@ -300,4 +300,4 @@ function App() {
   );
 }
 
-export default App;
+export default DrawingBoard;
