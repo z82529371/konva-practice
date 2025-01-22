@@ -192,8 +192,6 @@ const DropArea = ({
         !selectionBoxes.some((b) => b.images.some((i) => i.id === img.id))
     );
 
-    if (filteredImages.length < 2) return; // 如果過濾後圖片少於 2 張，直接返回
-
     // 選取框內的線條
     const selectedLines = lines.filter((line) => {
       const startInBox = isPointInBox(line.start, box);
@@ -343,7 +341,7 @@ const DropArea = ({
       }
 
       // 過濾掉只剩一張或空群組
-      return finalBoxes.filter((box) => box.images.length > 1);
+      return finalBoxes;
     });
   };
 

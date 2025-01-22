@@ -61,7 +61,7 @@ const SelectionBox = ({
       updateBoxes(prevBoxes, (box, idx) => idx === index, {
         x: newX,
         y: newY,
-      }).filter((box) => box.images.length > 1)
+      })
     );
 
     // 更新圖片位置
@@ -139,24 +139,19 @@ const SelectionBox = ({
       isImageInBox(img, newBox, imgWidth, imgHeight)
     );
 
-    if (imagesInBox.length <= 1) {
-      // 如果框框內圖片數量不足，移除該框框
-      setSelectionBoxes((prevBoxes) => deleteBoxByIndex(prevBoxes, index));
-    } else {
-      // 更新框框屬性，包含新位置與框框內圖片
-      setSelectionBoxes((prevBoxes) =>
-        updateBoxes(prevBoxes, (box, idx) => idx === index, {
-          ...newBox,
-          images: imagesInBox,
-        })
-      );
+    // 更新框框屬性，包含新位置與框框內圖片
+    setSelectionBoxes((prevBoxes) =>
+      updateBoxes(prevBoxes, (box, idx) => idx === index, {
+        ...newBox,
+        images: imagesInBox,
+      })
+    );
 
-      // 更新不在框框內的圖片屬性，將 groupId 設為 null
-      const updatedImages = images.map((img) =>
-        imagesInBox.includes(img) ? img : { ...img, groupId: null }
-      );
-      setImages(updatedImages);
-    }
+    // 更新不在框框內的圖片屬性，將 groupId 設為 null
+    const updatedImages = images.map((img) =>
+      imagesInBox.includes(img) ? img : { ...img, groupId: null }
+    );
+    setImages(updatedImages);
 
     // 重置縮放比例，避免影響後續操作
     node.scaleX(1);
