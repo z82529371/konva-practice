@@ -381,7 +381,6 @@ const DropArea = ({
           y: pointerPosition.y, // 初始終點與起點相同
         },
       });
-      console.log(currentLine);
     } else {
       // 如果有 currentLine，完成連線
       setLines((prev) => [
@@ -399,7 +398,6 @@ const DropArea = ({
           isStraight: true, // 是否為直線
         },
       ]);
-      console.log(lines);
 
       setCurrentLine(null); // 清除當前連線
       setIsLineMode(false); // 結束連線模式（可選）

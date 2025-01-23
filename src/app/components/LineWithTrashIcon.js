@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Group, Rect, Image, Line } from "react-konva";
+import { Group, Circle, Rect, Image, Line } from "react-konva";
 import useImage from "use-image";
 
 const LineWithTrashIcon = ({
@@ -25,6 +25,26 @@ const LineWithTrashIcon = ({
     setLines((prevLines) => prevLines.filter((_, i) => i !== index));
   };
 
+  // 拖動起始點
+  const handleDragStartPoint = (e) => {
+    const { x, y } = e.target.position();
+    setLines((prevLines) =>
+      prevLines.map((line, idx) =>
+        idx === index ? { ...line, start: { x: x - 50, y: y - 50 } } : line
+      )
+    );
+  };
+
+  // 拖動終點
+  const handleDragEndPoint = (e) => {
+    const { x, y } = e.target.position();
+    setLines((prevLines) =>
+      prevLines.map((line, idx) =>
+        idx === index ? { ...line, end: { x: x - 50, y: y - 50 } } : line
+      )
+    );
+  };
+
   return (
     <Group key={index}>
       {/* 線條 */}
@@ -44,6 +64,42 @@ const LineWithTrashIcon = ({
           const stage = e.target.getStage();
           stage.container().style.cursor = "default"; // 恢復預設鼠標
           setHoveredLineIndex(null);
+        }}
+      />
+
+      {/* 起點節點 */}
+      <Circle
+        x={line.start.x + 50}
+        y={line.start.y + 50}
+        radius={7}
+        fill="#3498db"
+        draggable
+        onDragMove={handleDragStartPoint}
+        onMouseEnter={(e) => {
+          const stage = e.target.getStage();
+          stage.container().style.cursor = "move";
+        }}
+        onMouseLeave={(e) => {
+          const stage = e.target.getStage();
+          stage.container().style.cursor = "default";
+        }}
+      />
+
+      {/* 終點節點 */}
+      <Circle
+        x={line.end.x + 50}
+        y={line.end.y + 50}
+        radius={7}
+        fill="#3498db"
+        draggable
+        onDragMove={handleDragEndPoint}
+        onMouseEnter={(e) => {
+          const stage = e.target.getStage();
+          stage.container().style.cursor = "move"; // 顯示拖曳游標
+        }}
+        onMouseLeave={(e) => {
+          const stage = e.target.getStage();
+          stage.container().style.cursor = "default"; // 恢復預設游標
         }}
       />
 
