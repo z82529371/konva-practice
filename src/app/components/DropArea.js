@@ -555,18 +555,20 @@ const DropArea = ({
                   });
                 }
 
-                // 更新所有跟該圖相關的線條
-                setLines((prev) =>
-                  prev.map((line) => {
+                // 更新所有與該圖片相關的線條
+                setLines((prevLines) =>
+                  prevLines.map((line) => {
                     if (line.start.id === img.id) {
+                      // 更新起點連接的線條
                       return {
                         ...line,
-                        start: { ...line.start, ...pos },
+                        start: { x: pos.x, y: pos.y, id: img.id },
                       };
                     } else if (line.end.id === img.id) {
+                      // 更新終點連接的線條
                       return {
                         ...line,
-                        end: { ...line.end, ...pos },
+                        end: { x: pos.x, y: pos.y, id: img.id },
                       };
                     }
                     return line;

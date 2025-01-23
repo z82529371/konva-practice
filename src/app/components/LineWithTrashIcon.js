@@ -70,6 +70,7 @@ const LineWithTrashIcon = ({
   const updateLineConnection = (line, images, boxes) => {
     let connectedStart = null;
     let connectedEnd = null;
+
     images.forEach((image) => {
       const width = image.width || 100; // 動態獲取圖片寬度，默認 100
       const height = image.height || 100; // 動態獲取圖片高度，默認 100
@@ -84,6 +85,7 @@ const LineWithTrashIcon = ({
         connectedStart = {
           x: image.x + width / 2 - 50,
           y: image.y + height / 2 - 50,
+          id: image.id, // 正確地保存圖片的 id
         };
       }
 
@@ -98,14 +100,15 @@ const LineWithTrashIcon = ({
         connectedEnd = {
           x: image.x + width / 2 - 50,
           y: image.y + height / 2 - 50,
+          id: image.id, // 正確地保存圖片的 id
         };
       }
     });
 
     return {
       ...line,
-      start: connectedStart || line.start,
-      end: connectedEnd || line.end,
+      start: connectedStart || line.start, // 如果有連接到圖片，更新位置與 id
+      end: connectedEnd || line.end, // 同樣更新
     };
   };
 
