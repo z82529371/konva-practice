@@ -39,7 +39,8 @@ function DrawingBoard() {
   const [selectionBoxes, setSelectionBoxes] = useState([]); // 新增框框狀態
 
   const [isGroupMode, setIsGroupMode] = useState(false);
-
+  const [isLineMode, setIsLineMode] = useState(false);
+  const [currentLine, setCurrentLine] = useState(null);
   // console.log(images);
   // console.log(lines);
 
@@ -222,14 +223,22 @@ function DrawingBoard() {
               type="line"
               label="Line"
               iconType="tool"
-              // onClick={addLine} // 點擊後新增線條
+              onClick={() => {
+                setIsLineMode(true); // 開啟連線模式
+                setCurrentLine(null); // 初始化連線
+                setIsGroupMode(false); // 關閉群組
+              }}
             />
             <ToolItem
               src="/group.svg"
               type="group"
               iconType="tool"
               label="Group"
-              onClick={() => setIsGroupMode(true)}
+              onClick={() => {
+                setIsGroupMode(true);
+                setIsLineMode(false);
+                setCurrentLine(null);
+              }}
             />
           </Box>
         </Box>
@@ -248,6 +257,10 @@ function DrawingBoard() {
           setSelectionBoxes={setSelectionBoxes}
           isGroupMode={isGroupMode}
           setIsGroupMode={setIsGroupMode}
+          isLineMode={isLineMode}
+          setIsLineMode={setIsLineMode}
+          currentLine={currentLine}
+          setCurrentLine={setCurrentLine}
           addImage={addImage}
           handleImageClick={handleImageClick}
           handleLineClick={handleLineClick}

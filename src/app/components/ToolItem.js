@@ -48,7 +48,7 @@ const ToolItem = ({
       <Box
         ref={iconType === "image" ? dragRef : null} // 僅對 `image` 類型綁定拖曳
         sx={{
-          width: iconType === "tool" ? 45 : 100,
+          width: iconType === "tool" ? 50 : 100,
           height: iconType === "tool" ? 50 : 100,
           marginBottom: 3,
           opacity: isDragging ? 0.5 : isHovered ? 0.5 : 1, // 拖曳或 hover 時透明度為 0.5

@@ -23,6 +23,10 @@ const DropArea = ({
   setSelectionBoxes,
   isGroupMode,
   setIsGroupMode,
+  isLineMode,
+  setIsLineMode,
+  currentLine,
+  setCurrentLine,
   addImage,
   handleImageClick,
   handleLineClick,
@@ -125,7 +129,7 @@ const DropArea = ({
   };
 
   // 當鼠標按下時觸發，用於開始框選
-  const handleMouseDown = (e) => {
+  const handleGroupMouseDown = (e) => {
     if (!isGroupMode) return;
 
     const stage = stageRef.current.getStage();
@@ -160,7 +164,7 @@ const DropArea = ({
   };
 
   // 當鼠標移動時觸發，用於更新框框的大小
-  const handleMouseMove = (e) => {
+  const handleGroupMouseMove = (e) => {
     if (!isSelecting || !selectionBox) return; // 避免 selectionBox 為 null
 
     const stage = stageRef.current.getStage();
@@ -174,7 +178,7 @@ const DropArea = ({
   };
 
   // 當鼠標放開時觸發，用於完成框選
-  const handleMouseUp = () => {
+  const handleGroupMouseUp = () => {
     if (!isSelecting || !selectionBox) return;
     setIsSelecting(false);
 
@@ -358,6 +362,70 @@ const DropArea = ({
     });
   };
 
+  // 鼠標按下：記錄開始點
+  const handleLineMouseDown = (e) => {
+    if (!isLineMode) return; // 僅在連線模式下執行
+
+    const stage = stageRef.current.getStage();
+    const pointerPosition = stage.getPointerPosition();
+
+    if (!currentLine) {
+      // 如果沒有 currentLine，開始一條新連線
+      setCurrentLine({
+        start: {
+          x: pointerPosition.x,
+          y: pointerPosition.y,
+        },
+        end: {
+          x: pointerPosition.x,
+          y: pointerPosition.y, // 初始終點與起點相同
+        },
+      });
+      console.log(currentLine);
+    } else {
+      // 如果有 currentLine，完成連線
+      setLines((prev) => [
+        ...prev,
+        {
+          start: {
+            x: currentLine.start.x - 50,
+            y: currentLine.start.y - 50,
+          },
+          end: {
+            x: pointerPosition.x - 50,
+            y: pointerPosition.y - 50,
+          },
+          color: "black", // 預設顏色
+          isStraight: true, // 是否為直線
+        },
+      ]);
+      console.log(lines);
+
+      setCurrentLine(null); // 清除當前連線
+      setIsLineMode(false); // 結束連線模式（可選）
+    }
+  };
+
+  // 鼠標移動：更新動態結束點
+  const handleLineMouseMove = (e) => {
+    if (!isLineMode || !currentLine) return;
+
+    const stage = stageRef.current.getStage();
+
+    // 確保事件發生在 Stage 上
+    if (e.target !== stage) return;
+
+    const pointerPosition = stage.getPointerPosition();
+
+    setCurrentLine({
+      ...currentLine,
+      end: {
+        x: pointerPosition.x,
+        y: pointerPosition.y,
+      },
+    });
+  };
+
   return (
     <Box
       ref={dropRef}
@@ -370,9 +438,25 @@ const DropArea = ({
         ref={stageRef}
         width={stageSize.width}
         height={stageSize.height}
-        onMouseDown={handleMouseDown}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
+        onMouseDown={(e) => {
+          if (isGroupMode) {
+            handleGroupMouseDown(e); // 框選模式的按下邏輯
+          } else if (isLineMode) {
+            handleLineMouseDown(e); // 連線模式的按下邏輯
+          }
+        }}
+        onMouseMove={(e) => {
+          if (isSelecting) {
+            handleGroupMouseMove(e); // 框選模式的移動邏輯
+          } else if (isLineMode && currentLine) {
+            handleLineMouseMove(e); // 連線模式的移動邏輯
+          }
+        }}
+        onMouseUp={(e) => {
+          if (isSelecting) {
+            handleGroupMouseUp(e); // 框選模式的結束邏輯
+          }
+        }}
         onClick={(e) => {
           const clickedOnEmpty = e.target === e.target.getStage(); // 確認點擊是否在空白處
           if (clickedOnEmpty) {
@@ -406,6 +490,22 @@ const DropArea = ({
             />
           ))}
         </Layer>
+
+        {/* 動態連線 Layer */}
+        {currentLine && (
+          <Layer>
+            <Line
+              points={[
+                currentLine.start.x,
+                currentLine.start.y,
+                currentLine.end.x,
+                currentLine.end.y,
+              ]}
+              stroke="black"
+              strokeWidth={2}
+            />
+          </Layer>
+        )}
 
         {/* 線條 Layer */}
         <Layer>
