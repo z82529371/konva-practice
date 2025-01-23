@@ -119,12 +119,14 @@ const DropArea = ({
   };
 
   // 檢查點是否在框內
-  const isPointInBox = (point, box) => {
+  const isPointInBox = (point, box, width, height) => {
+    const boxWidth = width || box.width; // 如果 width 為 null,使用 box.width 作為預設值
+    const boxHeight = height || box.height; // 如果 height 為 null,使用 box.height 作為預設值
     return (
       point.x >= box.x &&
-      point.x <= box.x + box.width &&
+      point.x <= box.x + boxWidth &&
       point.y >= box.y &&
-      point.y <= box.y + box.height
+      point.y <= box.y + boxHeight
     );
   };
 
@@ -516,6 +518,10 @@ const DropArea = ({
                 setLines={setLines}
                 calculateLinePoints={calculateLinePoints}
                 handleLineClick={handleLineClick}
+                isPointInBox={isPointInBox}
+                isItemInBox={isItemInBox}
+                images={images}
+                selectionBoxes={selectionBoxes}
               />
             );
           })}
