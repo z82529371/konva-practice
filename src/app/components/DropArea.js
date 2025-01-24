@@ -38,9 +38,10 @@ const DropArea = ({
   useEffect(() => {
     const stage = stageRef.current?.getStage();
     if (stage) {
-      stage.container().style.cursor = isGroupMode ? "crosshair" : "default";
+      stage.container().style.cursor =
+        isGroupMode || isLineMode ? "crosshair" : "default";
     }
-  }, [isGroupMode, stageRef]);
+  }, [isGroupMode, isLineMode, stageRef]);
 
   // useDrop: 接收來自 ToolItem (type=TOOL) 的物件
   const [{ isOver }, dropRef] = useDrop({
