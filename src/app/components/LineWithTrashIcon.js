@@ -14,6 +14,8 @@ const LineWithTrashIcon = ({
   selectionBoxes,
 }) => {
   const [isTrashHovered, setIsTrashHovered] = useState(false);
+  const [showStartPoints, setStartShowPoints] = useState(true);
+  const [showEndPoints, setEndShowPoints] = useState(true);
 
   const [trashIcon] = useImage("/trashcan.svg"); // 替換為實際的垃圾桶圖示路徑
   const [trashDarkIcon] = useImage("/trashcanDark.svg"); // 替換為實際的垃圾桶圖示路徑
@@ -87,6 +89,7 @@ const LineWithTrashIcon = ({
           y: image.y + height / 2 - 50,
           id: image.id, // 正確地保存圖片的 id
         };
+        setStartShowPoints(false);
       }
 
       if (
@@ -102,6 +105,7 @@ const LineWithTrashIcon = ({
           y: image.y + height / 2 - 50,
           id: image.id, // 正確地保存圖片的 id
         };
+        setEndShowPoints(false);
       }
     });
 
@@ -135,40 +139,44 @@ const LineWithTrashIcon = ({
       />
 
       {/* 起點節點 */}
-      <Circle
-        x={line.start.x + 50}
-        y={line.start.y + 50}
-        radius={7}
-        fill="#3498db"
-        draggable
-        onDragMove={(e) => handleDragStartPoint(e, index)}
-        onMouseEnter={(e) => {
-          const stage = e.target.getStage();
-          stage.container().style.cursor = "move";
-        }}
-        onMouseLeave={(e) => {
-          const stage = e.target.getStage();
-          stage.container().style.cursor = "default";
-        }}
-      />
+      {showStartPoints && (
+        <Circle
+          x={line.start.x + 50}
+          y={line.start.y + 50}
+          radius={7}
+          fill="#3498db"
+          draggable
+          onDragMove={(e) => handleDragStartPoint(e, index)}
+          onMouseEnter={(e) => {
+            const stage = e.target.getStage();
+            stage.container().style.cursor = "move";
+          }}
+          onMouseLeave={(e) => {
+            const stage = e.target.getStage();
+            stage.container().style.cursor = "default";
+          }}
+        />
+      )}
 
       {/* 終點節點 */}
-      <Circle
-        x={line.end.x + 50}
-        y={line.end.y + 50}
-        radius={7}
-        fill="#3498db"
-        draggable
-        onDragMove={(e) => handleDragEndPoint(e, index)}
-        onMouseEnter={(e) => {
-          const stage = e.target.getStage();
-          stage.container().style.cursor = "move"; // 顯示拖曳游標
-        }}
-        onMouseLeave={(e) => {
-          const stage = e.target.getStage();
-          stage.container().style.cursor = "default"; // 恢復預設游標
-        }}
-      />
+      {showEndPoints && (
+        <Circle
+          x={line.end.x + 50}
+          y={line.end.y + 50}
+          radius={7}
+          fill="#3498db"
+          draggable
+          onDragMove={(e) => handleDragEndPoint(e, index)}
+          onMouseEnter={(e) => {
+            const stage = e.target.getStage();
+            stage.container().style.cursor = "move"; // 顯示拖曳游標
+          }}
+          onMouseLeave={(e) => {
+            const stage = e.target.getStage();
+            stage.container().style.cursor = "default"; // 恢復預設游標
+          }}
+        />
+      )}
 
       {/* 中間點垃圾桶圖示 */}
       {hoveredLineIndex === index && (
