@@ -375,14 +375,8 @@ const DropArea = ({
     if (!currentLine) {
       // 如果沒有 currentLine，開始一條新連線
       setCurrentLine({
-        start: {
-          x: pointerPosition.x,
-          y: pointerPosition.y,
-        },
-        end: {
-          x: pointerPosition.x,
-          y: pointerPosition.y, // 初始終點與起點相同
-        },
+        start: { x: pointerPosition.x, y: pointerPosition.y, id: null },
+        end: { x: pointerPosition.x, y: pointerPosition.y, id: null },
       });
     } else {
       // 如果有 currentLine，完成連線
@@ -392,10 +386,12 @@ const DropArea = ({
           start: {
             x: currentLine.start.x - 50,
             y: currentLine.start.y - 50,
+            id: currentLine.start.id,
           },
           end: {
             x: pointerPosition.x - 50,
             y: pointerPosition.y - 50,
+            id: null,
           },
           color: "black", // 預設顏色
           isStraight: true, // 是否為直線
@@ -413,18 +409,57 @@ const DropArea = ({
 
     const stage = stageRef.current.getStage();
 
-    // 確保事件發生在 Stage 上
-    if (e.target !== stage) return;
+    // // 確保事件發生在 Stage 上
+    // if (e.target !== stage) return;
 
     const pointerPosition = stage.getPointerPosition();
 
-    setCurrentLine({
-      ...currentLine,
-      end: {
-        x: pointerPosition.x,
-        y: pointerPosition.y,
-      },
-    });
+    setCurrentLine((prev) => ({
+      ...prev,
+      end: { ...prev.end, x: pointerPosition.x, y: pointerPosition.y },
+    }));
+  };
+
+  // 鼠標點擊：連線圖片
+  const handleLineImageClick = (clickedImage) => {
+    // 如果現在還沒有 currentLine，代表要開始一條新線
+    if (!currentLine) {
+      // 還沒起點，現在點圖片 => 設起點為圖片中心（假設寬高=100，就加 50）
+
+      setCurrentLine({
+        start: {
+          x: clickedImage.x + 50,
+          y: clickedImage.y + 50,
+          id: clickedImage.id,
+        },
+        end: {
+          x: clickedImage.x + 50,
+          y: clickedImage.y + 50,
+          id: null,
+        },
+      });
+    } else {
+      // 如果已經有 currentLine，代表要結束連線
+      const newLine = {
+        start: {
+          x: currentLine.start.x - 50,
+          y: currentLine.start.y - 50,
+          id: currentLine.start.id,
+        },
+        end: {
+          x: clickedImage.x,
+          y: clickedImage.y,
+          id: clickedImage.id,
+        },
+        color: "black",
+        isStraight: true,
+      };
+
+      // 把新線加入 lines
+      setLines((prev) => [...prev, newLine]);
+      setCurrentLine(null);
+      setIsLineMode(false);
+    }
   };
 
   return (
@@ -442,8 +477,9 @@ const DropArea = ({
         onMouseDown={(e) => {
           if (isGroupMode) {
             handleGroupMouseDown(e); // 框選模式的按下邏輯
-          } else if (isLineMode) {
-            handleLineMouseDown(e); // 連線模式的按下邏輯
+          } // 只有在線模式 + 點擊到空白，才呼叫 handleLineMouseDown
+          else if (isLineMode && e.target === e.target.getStage()) {
+            handleLineMouseDown(e);
           }
         }}
         onMouseMove={(e) => {
@@ -589,7 +625,13 @@ const DropArea = ({
                 // 更新框框的圖片和線條
                 updateBoxImagesAndLines({ ...img, ...pos });
               }}
-              onClick={() => handleImageClick(img)}
+              onClick={() => {
+                if (isLineMode) {
+                  handleLineImageClick(img);
+                } else {
+                  handleImageClick(img);
+                }
+              }}
               onDblClick={handleImageDblClick}
             />
           ))}
